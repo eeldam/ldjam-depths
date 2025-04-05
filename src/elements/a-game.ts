@@ -9,20 +9,15 @@ import { eventListener, getElementFromPath, getElementFromPoint } from "../event
 import { getIndexInParent, getParent } from "../utils.js";
 import { ASentenceElement } from "./a-sentence.js";
 
+import { getScary, checkSentence } from '../game-data.js';
+
+import type { PropertyValues } from "lit";
+import type { SentenceData } from "../game-data.js";
+
 enum State {
   Start,
   Playing,
   GameOver,
-}
-
-interface WordData {
-  text: string,
-  draggable: boolean,
-}
-
-function buildSentenceData(text: string, draggableWords: string[]): WordData[] {
-  const draggables = new Set(draggableWords);
-  return text.split(' ').map(text => ({ text, draggable: draggables.has(text) }));
 }
 
 @customElement('a-game')
@@ -69,18 +64,14 @@ export class AGameElement extends LitElement {
   @state()
   accessor state: State = State.Start;
 
-  sentences: WordData[][] = [
-    buildSentenceData('what was that noise', ['what', 'was']),
-    buildSentenceData('some thing is wrong', ['some', 'was']),
-    buildSentenceData('no no no', ['no', 'no', 'no']),
-  ];
+  sentences: SentenceData[] = [];
 
   _dropTargetSentenceIndex = -1;
   _dropTargetWordIndex = -1;
   _dragSourceSentenceIndex = -1;
   _dragSourceWordIndex = -1;
 
-  willUpdate() {
+  updateDragAndDropIndices() {
     const { dropTarget } = this;
     const dragSourceContainer = this.draggedElement ? getParent(this.draggedElement) : null;
     if (!dropTarget || !this.draggedElement || !dragSourceContainer) {
@@ -101,6 +92,22 @@ export class AGameElement extends LitElement {
       this._dropTargetWordIndex = getIndexInParent(dropTarget);
       const sentence = getParent(dropTarget);
       this._dropTargetSentenceIndex = sentence ? getIndexInParent(sentence) : -1;
+    }
+  }
+
+  loadSentenceData() {
+    this.sentences.push(getScary('what was that noise'));
+    this.sentences.push(getScary('some thing is wrong'));
+    this.sentences.push(getScary('no no no'));
+  }
+
+  willUpdate(changedProperties: PropertyValues) {
+    if (changedProperties.has('draggedElement') || changedProperties.has('dropTarget'))
+      this.updateDragAndDropIndices();
+
+    if (changedProperties.has('state')) {
+      if (this.state === State.Playing)
+        this.loadSentenceData();
     }
   }
 
@@ -261,6 +268,10 @@ export class AGameElement extends LitElement {
       to.push(...moved);
     else
       to.splice(dropChunkIndex, 0, ...moved);
+
+    for (let sentence of this.sentences) {
+      checkSentence(sentence);
+    }
 
     this.requestUpdate();
   }
