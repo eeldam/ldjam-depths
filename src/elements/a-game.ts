@@ -24,8 +24,8 @@ export class AGameElement extends LitElement {
       display: flex;
       place-items: center;
       place-content: center;
-      min-width: 320px;
-      min-height: 100vh;
+      min-width: 100%;
+      min-height: 100%;
     }
 
     .inner {

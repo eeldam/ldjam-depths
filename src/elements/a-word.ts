@@ -1,6 +1,8 @@
 import { LitElement, css } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
+import { eventListener } from "../event-listener.js";
+
 @customElement('a-word')
 export class AWordElement extends LitElement {
   static styles = css`
@@ -34,5 +36,10 @@ export class AWordElement extends LitElement {
 
   render() {
     return this.text;
+  }
+
+  @eventListener('touchstart', false)
+  handleTouchStart(e: TouchEvent) {
+    e.preventDefault();
   }
 }

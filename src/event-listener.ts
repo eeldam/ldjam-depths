@@ -2,7 +2,7 @@ interface EventListener<E extends Event> {
   (evt: E): void;
 }
 
-export function eventListener<E extends Event>(type: string) {
+export function eventListener<E extends Event>(type: string, shadow = true) {
   return function listener<This extends HTMLElement>(
     target: EventListener<E>,
     context: ClassMethodDecoratorContext<This, (this: This, ...args: any) => any>
@@ -10,9 +10,12 @@ export function eventListener<E extends Event>(type: string) {
     context.addInitializer(function (this: This) {
       // only using shadow dom rendering in this app, so need to defer listen
       // for that to be set up
-      queueMicrotask(() => {
-        this.shadowRoot?.addEventListener(type, target.bind(this) as EventListenerOrEventListenerObject)
-      });
+      if (shadow)
+        queueMicrotask(() => {
+          this.shadowRoot?.addEventListener(type, target.bind(this) as EventListenerOrEventListenerObject)
+        });
+      else
+        this.addEventListener(type, target.bind(this) as EventListenerOrEventListenerObject);
     });
   }
 }
