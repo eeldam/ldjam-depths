@@ -40,6 +40,7 @@ export class AGameElement extends LitElement {
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;
       padding: 15px;
     }
     
@@ -176,7 +177,6 @@ export class AGameElement extends LitElement {
 
     this.draggedElement.style.transform = this._dragData.getTransform(e);
     this.draggedElement.style.pointerEvents = 'none';
-    console.log(1);
   }
 
   @eventListener('pointerup')
@@ -185,8 +185,49 @@ export class AGameElement extends LitElement {
     if (!this.draggedElement)
       return;
 
+    if (this._dropTargetSentenceIndex > -1) {
+      this.resolveDrop();
+
+    }
+
     this.draggedElement.style.transform = `translate(0px, 0px)`;
     this.draggedElement.style.pointerEvents = 'initial';
     this.draggedElement = null;
+  }
+
+  resolveDrop() {
+    if (!this.draggedElement)
+      return;
+    const container = getParent(this.draggedElement)!;
+    if (!container)
+      return;
+
+    const dragContainerIndex = getIndexInParent(container);
+    const dragChunkIndex = getIndexInParent(this.draggedElement);
+    const dropContainerIndex = this._dropTargetSentenceIndex;
+    const dropChunkIndex = this._dropTargetWordIndex;
+
+    const isDifferentPosition = dragChunkIndex !== dropChunkIndex;
+    const isDifferentContainer = dragContainerIndex !== dropContainerIndex;
+
+    if (!(isDifferentContainer || isDifferentPosition))
+      return;
+
+    const from = this.sentences[dragContainerIndex];
+    if (!from)
+      return;
+    const to = this.sentences[dropContainerIndex];
+    if (!to)
+      return;
+
+    const moved = from.splice(dragChunkIndex, 1);
+
+    // TODO - use position to determine where to drop (beginning or end)
+    if (dropChunkIndex < 0)
+      to.push(...moved);
+    else
+      to.splice(dropChunkIndex, 0, ...moved);
+
+    this.requestUpdate();
   }
 }
