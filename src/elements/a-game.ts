@@ -18,6 +18,7 @@ export class AGameElement extends LitElement {
       top: 0;
       right: 0;
       bottom: 0;
+      touch-action: manipulation;
     }
 
     .outer {
@@ -66,8 +67,6 @@ export class AGameElement extends LitElement {
       const sentence = getParent(dropTarget);
       this._dropTargetSentenceIndex = sentence ? getIndexInParent(sentence) : -1;
     }
-
-    console.log('updated', dropTarget, this._dropTargetSentenceIndex, this._dropTargetWordIndex);
   }
 
   render() {
@@ -120,8 +119,10 @@ export class AGameElement extends LitElement {
     console.log('x');
     const target = getElementFromPath(e);
     
-    if (!(target instanceof AWordElement))
+    if (!(target instanceof AWordElement)) {
+      console.log('tried to drag', target);
       return;
+    }
 
     this._dragData.anchor(e);
 
