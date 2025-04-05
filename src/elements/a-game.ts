@@ -67,13 +67,24 @@ export class AGameElement extends LitElement {
 
   _dropTargetSentenceIndex = -1;
   _dropTargetWordIndex = -1;
+  _dragSourceSentenceIndex = -1;
+  _dragSourceWordIndex = -1;
 
   willUpdate() {
     const { dropTarget } = this;
-    if (!dropTarget || !this.draggedElement) {
+    const dragSourceContainer = this.draggedElement ? getParent(this.draggedElement) : null;
+    if (!dropTarget || !this.draggedElement || !dragSourceContainer) {
       this._dropTargetSentenceIndex = -1;
       this._dropTargetWordIndex = -1;
-    } else if (dropTarget instanceof ASentenceElement) {
+      this._dragSourceSentenceIndex = -1;
+      this._dragSourceWordIndex = -1;
+      return;
+    } 
+    
+    this._dragSourceSentenceIndex = getIndexInParent(dragSourceContainer);
+    this._dragSourceWordIndex = getIndexInParent(this.draggedElement);
+
+    if (dropTarget instanceof ASentenceElement) {
       this._dropTargetSentenceIndex = getIndexInParent(dropTarget);
       this._dropTargetWordIndex = -1;
     } else if (dropTarget instanceof AWordElement) {
@@ -113,11 +124,14 @@ export class AGameElement extends LitElement {
   renderPlaying() {
     return this.sentences.map((words, i) => {
       const isSentenceDropTarget = this._dropTargetSentenceIndex === i;
+      const isSentenceDragSource = this._dragSourceSentenceIndex === i;
+
       return html`<a-sentence
         ?droptarget=${isSentenceDropTarget}
         .words=${words.map((text, j) => {
           const isDropTarget = isSentenceDropTarget && this._dropTargetWordIndex === j;
-          return { text, isDropTarget };
+          const isDragging = isSentenceDragSource && this._dragSourceWordIndex === j;
+          return { text, isDropTarget, isDragging };
         })}
         key=${i}></a-sentence>`;
     });
@@ -166,6 +180,7 @@ export class AGameElement extends LitElement {
 
     this.draggedElement = target;
     this.draggedElement.style.transform = `translate(0px, 0px)`;
+    this.draggedElement.style.zIndex = '100';
   }
 
   @eventListener('pointermove')
@@ -177,6 +192,7 @@ export class AGameElement extends LitElement {
 
     this.draggedElement.style.transform = this._dragData.getTransform(e);
     this.draggedElement.style.pointerEvents = 'none';
+    this.draggedElement.style.zIndex = 'initial';
   }
 
   @eventListener('pointerup')
@@ -199,12 +215,9 @@ export class AGameElement extends LitElement {
   resolveDrop() {
     if (!this.draggedElement)
       return;
-    const container = getParent(this.draggedElement)!;
-    if (!container)
-      return;
 
-    const dragContainerIndex = getIndexInParent(container);
-    const dragChunkIndex = getIndexInParent(this.draggedElement);
+    const dragContainerIndex = this._dragSourceSentenceIndex;
+    const dragChunkIndex = this._dragSourceSentenceIndex;
     const dropContainerIndex = this._dropTargetSentenceIndex;
     const dropChunkIndex = this._dropTargetWordIndex;
 

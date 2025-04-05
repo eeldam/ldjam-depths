@@ -17,6 +17,12 @@ export class AWordElement extends LitElement {
       background-color: #242424;
     }
 
+    :host([dragging]) {
+      z-index: 100;
+      pointer-events: none;
+    }
+    
+    :host([dragging]),
     :host(:hover) {
       background: white;
       border-color: white;
@@ -38,6 +44,9 @@ export class AWordElement extends LitElement {
 
   @property({ type: Boolean })
   accessor droptarget = false;
+
+  @property({ type: Boolean })
+  accessor dragging = false;
 
   render() {
     return html`<span>${this.text}</span>`;
