@@ -20,12 +20,21 @@ export function sleep(ms: number) {
   })
 }
 
-export function animateIn(el: HTMLElement) {
+export function animate(el: HTMLElement, className: string, callback?: () => void) {
   const listener = (_e: AnimationEvent) => {
     el.removeEventListener('animationend', listener);
-    el.classList.remove('animate-in');
+    el.classList.remove(className);
+    if (callback) callback();
   }
 
   el.addEventListener('animationend', listener);
-  el.classList.add('animate-in');
+  el.classList.add(className);
+}
+
+export function animateIn(el: HTMLElement, callback?: () => void) {
+  animate(el, 'animate-in', callback);
+}
+
+export function animateOut(el: HTMLElement, callback?: () => void) {
+  animate(el, 'animate-out', callback);
 }

@@ -1,5 +1,7 @@
 import { LitElement, css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
+import { keyed } from 'lit/directives/keyed.js';
+
 
 import './a-sentence.js';
 import './a-button.js';
@@ -10,7 +12,7 @@ import { eventListener, getElementFromPath, getElementFromPoint } from "../event
 import { getIndexInParent, getParentComponent, sleep } from "../utils.js";
 import { ASentenceElement } from "./a-sentence.js";
 
-import { getScary, checkSentence } from '../game-data.js';
+import { getScary, checkSentence, completeSentence } from '../game-data.js';
 
 import type { PropertyValues } from "lit";
 import type { SentenceData } from "../game-data.js";
@@ -50,11 +52,6 @@ export class AGameElement extends LitElement {
       justify-content: center;
       align-items: center;
       padding: 15px;
-    }
-    
-
-    a-sentence {
-      justify-content: center;
     }
   `;
 
@@ -99,14 +96,8 @@ export class AGameElement extends LitElement {
     }
   }
 
-  async loadSentenceData() {
+  async loadSentenceData(toLoad: string[]) {
     // TODO - update game state to disallow playing during this?
-
-    const toLoad = [
-      'what was that noise',
-      'some thing is wrong',
-      'no no no',
-    ];
 
     for (let sentence of toLoad) {
       console.log('loading', sentence);
@@ -122,7 +113,7 @@ export class AGameElement extends LitElement {
 
     if (changedProperties.has('state')) {
       if (this.state === State.Playing)
-        this.loadSentenceData();
+        this.loadSentenceData(['did i lock the door']);
     }
   }
 
@@ -155,20 +146,22 @@ export class AGameElement extends LitElement {
   }
 
   renderPlaying() {
-    return this.sentences.map((words, i) => {
+    return this.sentences.map((data, i) => {
       const isSentenceDropTarget = this._dropTargetSentenceIndex === i;
       const isSentenceDragSource = this._dragSourceSentenceIndex === i;
 
-      return html`<a-sentence
+      return keyed(data.id, html`<a-sentence
         ?droptarget=${isSentenceDropTarget}
-        .words=${words.map((wordData, j) => {
+        .words=${data.words.map((wordData, j) => {
           const isDropTarget = isSentenceDropTarget && this._dropTargetWordIndex === j;
           const isDragging = isSentenceDragSource && this._dragSourceWordIndex === j;
           const { text, draggable } = wordData;
 
           return { text, isDropTarget, isDragging, draggable };
         })}
-        key=${i}></a-sentence>`;
+        index=${i}
+        key
+      ></a-sentence>`);
     });
   }
 
@@ -226,7 +219,19 @@ export class AGameElement extends LitElement {
     if (!this.draggedElement)
       return;
 
-    this.dropTarget = getElementFromPoint(this, e);
+    const dropTarget = getElementFromPoint(this, e);
+    
+    // TODO - do in a more generic way
+    // prevent dropping into a sentence that is e.g. animating out
+    if (dropTarget) {
+      const dropContainer = dropTarget instanceof ASentenceElement ? dropTarget : getParentComponent(dropTarget) as ASentenceElement;
+      if (!dropContainer?.locked)
+        this.dropTarget = dropTarget;
+      else
+        this.dropTarget = null;
+    } else {
+      this.dropTarget = null;
+    }
 
     this.draggedElement.style.transform = this._dragData.getTransform(e);
     this.draggedElement.style.pointerEvents = 'none';
@@ -275,16 +280,32 @@ export class AGameElement extends LitElement {
     if (!to)
       return;
 
-    const moved = from.splice(dragChunkIndex, 1);
+    const moved = from.words.splice(dragChunkIndex, 1);
 
     // TODO - use position to determine where to drop (beginning or end)
     if (dropChunkIndex < 0)
-      to.push(...moved);
+      to.words.push(...moved);
     else
-      to.splice(dropChunkIndex, 0, ...moved);
+      to.words.splice(dropChunkIndex, 0, ...moved);
 
-    for (let sentence of this.sentences) {
-      checkSentence(sentence);
+    for (let i = 0; i < this.sentences.length; i++) {
+      const sentence = this.sentences[i];
+      if (!checkSentence(sentence))
+        continue;
+      
+      const el = this.shadowRoot?.querySelector<ASentenceElement>(`a-sentence[index="${i}"]`);
+      // TODO lock game during this?
+      if (el)
+        el.destroy(() => {
+
+        // TODO unlock game
+        if (this.sentences[i] !== sentence)
+          throw new Error('unexpected sentence change!')
+
+        // TODO - stagger if multiple sentences completed simultatenously?
+        completeSentence(sentence, this.sentences);
+        this.requestUpdate();
+        });
     }
 
     this.requestUpdate();

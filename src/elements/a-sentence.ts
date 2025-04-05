@@ -1,9 +1,9 @@
 import { LitElement, PropertyValues, css, html } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
 
 import './a-word.js';
 
-import { animateIn } from "../utils.js";
+import { animateIn, animateOut, sleep } from "../utils.js";
 
 interface WordData {
   text: string;
@@ -16,19 +16,23 @@ interface WordData {
 export class ASentenceElement extends LitElement {
   static styles = css`
     :host {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+    
+    .container {
       transition: background-color .2s ease;
       background-color: transparent;
       border-radius: 15px;
-    }
-
-    .container {
       padding: 10px;
       display: flex;
       flex-wrap: wrap;
       gap: .5em;
+      justify-content: center;
     }
 
-    :host([droptarget]) {
+    :host([droptarget]) .container {
       background-color: #424242;
     }
 
@@ -65,6 +69,33 @@ export class ASentenceElement extends LitElement {
     :host(.hide) {
       visibility: hidden;
     }
+
+    :host(.complete) .container {
+      background: rgb(47 143 255);
+      /* background: rgb(39 131 239); */
+    }
+
+    :host(.complete) a-word {
+      border-color: transparent;
+      background-color: transparent;
+      font-weight: 600;
+    }
+
+    :host(.animate-out) {
+      animation: 2s ease 1 forwards animateout;
+    }
+
+    @keyframes animateout {
+      0% {
+        height: var(--animate-height);
+        opacity: 1;
+      }
+
+      100% {
+        height: 0px;
+        opacity: 0;
+      }
+    }
   `;
 
   @property({ type: Boolean })
@@ -73,17 +104,35 @@ export class ASentenceElement extends LitElement {
   @property({ attribute: false })
   accessor words: WordData[] = [];
 
+  @state()
+  accessor locked = false;
+
   render() {
     return html`
       <div class="container">
         ${this.words.map((data, i) => html`<a-word
           ?droptarget=${data.isDropTarget}
           ?dragging=${data.isDragging}
-          ?draggable=${data.draggable}
+          ?draggable=${data.draggable && !this.locked}
           .text=${data.text}
           key=${i}></a-word>`)}
       </div>
     `;
+  }
+
+  private setAnimationHeight() {
+    const rect = this.getBoundingClientRect();
+    const height = rect.height;
+    this.style.setProperty('--animate-height', `${height}px`);
+  }
+
+  async destroy(callback?: () => void) {
+    this.classList.add('complete');
+    this.locked = true;
+
+    await sleep(1500);
+    this.setAnimationHeight();
+    animateOut(this, callback);
   }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
@@ -92,12 +141,7 @@ export class ASentenceElement extends LitElement {
     queueMicrotask(() => {
       this.classList.remove('hide');
 
-      const rect = this.getBoundingClientRect();
-      // const computedStyles = window.getComputedStyle(this);
-      const height = rect.height;// - (parseFloat(computedStyles.paddingTop) + parseFloat(computedStyles.paddingBlock));
-
-      this.style.setProperty('--animate-height', `${height}px`);
-  
+      this.setAnimationHeight();
       animateIn(this);
   
       for (let child of Array.from(this.shadowRoot!.querySelectorAll('a-word'))) {
