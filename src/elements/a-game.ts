@@ -217,7 +217,7 @@ export class AGameElement extends LitElement {
       return;
 
     const dragContainerIndex = this._dragSourceSentenceIndex;
-    const dragChunkIndex = this._dragSourceSentenceIndex;
+    const dragChunkIndex = this._dragSourceWordIndex;
     const dropContainerIndex = this._dropTargetSentenceIndex;
     const dropChunkIndex = this._dropTargetWordIndex;
 
@@ -227,6 +227,9 @@ export class AGameElement extends LitElement {
     const isDifferentContainer = dragContainerIndex !== dropContainerIndex;
 
     if (!(isDifferentContainer || isDifferentPosition))
+      return;
+
+    if (!isDifferentContainer && dropChunkIndex < 0)
       return;
 
     const from = this.sentences[dragContainerIndex];
