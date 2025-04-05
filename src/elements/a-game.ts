@@ -6,7 +6,7 @@ import './a-button.js';
 import { AWordElement } from "./a-word.js";
 
 import { eventListener, getElementFromPath, getElementFromPoint } from "../event-listener.js";
-import { getIndexInParent, getParent } from "../utils.js";
+import { getIndexInParent, getParent, sleep } from "../utils.js";
 import { ASentenceElement } from "./a-sentence.js";
 
 import { getScary, checkSentence } from '../game-data.js';
@@ -31,6 +31,7 @@ export class AGameElement extends LitElement {
       right: 0;
       bottom: 0;
       touch-action: manipulation;
+      overflow: hidden;
     }
 
     .outer {
@@ -95,10 +96,21 @@ export class AGameElement extends LitElement {
     }
   }
 
-  loadSentenceData() {
-    this.sentences.push(getScary('what was that noise'));
-    this.sentences.push(getScary('some thing is wrong'));
-    this.sentences.push(getScary('no no no'));
+  async loadSentenceData() {
+    // TODO - update game state to disallow playing during this?
+
+    const toLoad = [
+      'what was that noise',
+      'some thing is wrong',
+      'no no no',
+    ];
+
+    for (let sentence of toLoad) {
+      console.log('loading', sentence);
+      this.sentences.push(getScary(sentence));
+      this.requestUpdate();
+      await sleep(500);
+    }
   }
 
   willUpdate(changedProperties: PropertyValues) {
@@ -242,8 +254,6 @@ export class AGameElement extends LitElement {
     const dragChunkIndex = this._dragSourceWordIndex;
     const dropContainerIndex = this._dropTargetSentenceIndex;
     const dropChunkIndex = this._dropTargetWordIndex;
-
-    console.log(dragContainerIndex, dragChunkIndex, dropContainerIndex, dropChunkIndex);
 
     const isDifferentPosition = dragChunkIndex !== dropChunkIndex;
     const isDifferentContainer = dragContainerIndex !== dropContainerIndex;
