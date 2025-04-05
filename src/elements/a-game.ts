@@ -6,7 +6,7 @@ import './a-button.js';
 import { AWordElement } from "./a-word.js";
 
 import { eventListener, getElementFromPath, getElementFromPoint } from "../event-listener.js";
-import { getIndexInParent, getParent, sleep } from "../utils.js";
+import { getIndexInParent, getParentComponent, sleep } from "../utils.js";
 import { ASentenceElement } from "./a-sentence.js";
 
 import { getScary, checkSentence } from '../game-data.js';
@@ -74,7 +74,8 @@ export class AGameElement extends LitElement {
 
   updateDragAndDropIndices() {
     const { dropTarget } = this;
-    const dragSourceContainer = this.draggedElement ? getParent(this.draggedElement) : null;
+    const dragSourceContainer = this.draggedElement ? getParentComponent(this.draggedElement) : null;
+
     if (!dropTarget || !this.draggedElement || !dragSourceContainer) {
       this._dropTargetSentenceIndex = -1;
       this._dropTargetWordIndex = -1;
@@ -91,7 +92,7 @@ export class AGameElement extends LitElement {
       this._dropTargetWordIndex = -1;
     } else if (dropTarget instanceof AWordElement) {
       this._dropTargetWordIndex = getIndexInParent(dropTarget);
-      const sentence = getParent(dropTarget);
+      const sentence = getParentComponent(dropTarget);
       this._dropTargetSentenceIndex = sentence ? getIndexInParent(sentence) : -1;
     }
   }

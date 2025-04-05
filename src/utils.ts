@@ -1,5 +1,9 @@
 export function getParent(el: HTMLElement): HTMLElement | null {
-  return el.parentElement ?? ((el.getRootNode() as ShadowRoot).host as HTMLElement);
+  return el.parentElement ?? getParentComponent(el);
+}
+
+export function getParentComponent(el: HTMLElement): HTMLElement | null {
+  return (el.getRootNode() as ShadowRoot).host as HTMLElement;
 }
 
 export function getIndexInParent(el: HTMLElement): number {
