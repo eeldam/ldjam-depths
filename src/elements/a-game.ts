@@ -193,6 +193,7 @@ export class AGameElement extends LitElement {
     this.draggedElement.style.transform = `translate(0px, 0px)`;
     this.draggedElement.style.pointerEvents = 'initial';
     this.draggedElement = null;
+    this.dropTarget = null;
   }
 
   resolveDrop() {
@@ -206,6 +207,8 @@ export class AGameElement extends LitElement {
     const dragChunkIndex = getIndexInParent(this.draggedElement);
     const dropContainerIndex = this._dropTargetSentenceIndex;
     const dropChunkIndex = this._dropTargetWordIndex;
+
+    console.log(dragContainerIndex, dragChunkIndex, dropContainerIndex, dropChunkIndex);
 
     const isDifferentPosition = dragChunkIndex !== dropChunkIndex;
     const isDifferentContainer = dragContainerIndex !== dropContainerIndex;
