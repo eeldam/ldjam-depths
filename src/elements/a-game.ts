@@ -108,7 +108,8 @@ export class AGameElement extends LitElement {
 
   @eventListener('touchstart')
   handleTouchStart(e: PointerEvent) {
-    e.preventDefault();
+    if (e.cancelable)
+      e.preventDefault();
   }
 
   @eventListener('pointerdown')
