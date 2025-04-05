@@ -1,6 +1,8 @@
 import { LitElement, css, html } from "lit";
 import { customElement } from "lit/decorators.js";
 
+import { eventListener } from "../event-listener";
+
 @customElement('a-button')
 export class AButtonElement extends LitElement {
   static styles = css`
@@ -39,5 +41,16 @@ export class AButtonElement extends LitElement {
 
   render() {
     return html`<span><slot></slot></span>`;
+  }
+
+  @eventListener('touchstart', false)
+  handleTouchStart(e: PointerEvent) {
+    if (e.cancelable)
+      e.preventDefault();
+  }
+
+  @eventListener('pointerup', false)
+  handlePointerUp(_e: PointerEvent) {
+    this.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
   }
 }
