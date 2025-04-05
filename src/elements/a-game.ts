@@ -2,11 +2,18 @@ import { LitElement, css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 
 import './a-sentence.js';
+import './a-button.js';
 import { AWordElement } from "./a-word.js";
 
 import { eventListener, getElementFromPath, getElementFromPoint } from "../event-listener.js";
 import { getIndexInParent, getParent } from "../utils.js";
 import { ASentenceElement } from "./a-sentence.js";
+
+enum State {
+  Start,
+  Playing,
+  GameOver,
+}
 
 @customElement('a-game')
 export class AGameElement extends LitElement {
@@ -32,11 +39,8 @@ export class AGameElement extends LitElement {
     .inner {
       display: flex;
       flex-direction: column;
-      gap: .5em;
       justify-content: center;
-
-      padding: 16px;
-      border: 1px solid;
+      padding: 15px;
     }
     
 
@@ -44,6 +48,15 @@ export class AGameElement extends LitElement {
       justify-content: center;
     }
   `;
+
+  @state()
+  accessor draggedElement: HTMLElement | null = null;
+
+  @state()
+  accessor dropTarget: HTMLElement | null = null;
+
+  @state()
+  accessor state: State = State.Start;
 
   sentences: string[][] = [
     'what was that noise'.split(' '),
@@ -73,26 +86,53 @@ export class AGameElement extends LitElement {
     return html`
       <div class="outer">
         <div class="inner">
-          ${this.sentences.map((words, i) => {
-            const isSentenceDropTarget = this._dropTargetSentenceIndex === i;
-            return html`<a-sentence
-              ?droptarget=${isSentenceDropTarget}
-              .words=${words.map((text, j) => {
-                const isDropTarget = isSentenceDropTarget && this._dropTargetWordIndex === j;
-                return { text, isDropTarget };
-              })}
-              key=${i}></a-sentence>`;
-          })}
+          ${this.renderGameState()}
         </div>
       </div>
     `;
   }
 
-  @state()
-  accessor draggedElement: HTMLElement | null = null;
+  renderGameState() {
+    switch (this.state) {
+      case State.Start:
+        return this.renderStart();
+      case State.Playing:
+        return this.renderPlaying();
+      case State.GameOver:
+        return this.renderGameOver();
+    }
+  }
 
-  @state()
-  accessor dropTarget: HTMLElement | null = null;
+  renderStart() {
+    return html`
+      <a-button @click=${this.handleStartButton}>Go to sleep...</a-button>
+    `;
+  }
+
+  renderPlaying() {
+    return this.sentences.map((words, i) => {
+      const isSentenceDropTarget = this._dropTargetSentenceIndex === i;
+      return html`<a-sentence
+        ?droptarget=${isSentenceDropTarget}
+        .words=${words.map((text, j) => {
+          const isDropTarget = isSentenceDropTarget && this._dropTargetWordIndex === j;
+          return { text, isDropTarget };
+        })}
+        key=${i}></a-sentence>`;
+    });
+  }
+
+  renderGameOver() {
+    return html`
+      Game Over
+    `;
+  }
+
+  handleStartButton(e: Event) {
+    e.stopPropagation();
+
+    this.state = State.Playing;
+  }
 
   _dragData = {
     x: 0,

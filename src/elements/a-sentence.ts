@@ -15,10 +15,15 @@ export class ASentenceElement extends LitElement {
       display: flex;
       flex-wrap: wrap;
       gap: .5em;
+
+      transition: background-color .2s ease;
+      background-color: transparent;
+      padding: 10px;
+      border-radius: 15px;
     }
 
     :host([droptarget]) {
-      /* TODO */
+      background-color: #424242;
     }
   `;
 

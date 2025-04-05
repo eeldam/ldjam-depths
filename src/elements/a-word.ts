@@ -13,17 +13,19 @@ export class AWordElement extends LitElement {
 
       cursor: pointer;
       user-select: none;
+
+      background-color: #242424;
     }
 
     :host(:hover) {
-      background: red;
-      border-color: red;
+      background: white;
+      border-color: white;
       color: black;
-      font-weight: 600; 
     }
 
     :host([droptarget]) {
-      border: 1px dashed black;
+      background-color: #848484;
+      border-color: #848484;
     }
 
     span {
