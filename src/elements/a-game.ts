@@ -3,6 +3,7 @@ import { customElement, state } from "lit/decorators.js";
 
 import './a-sentence.js';
 import './a-button.js';
+import './a-timer.js';
 import { AWordElement } from "./a-word.js";
 
 import { eventListener, getElementFromPath, getElementFromPoint } from "../event-listener.js";
@@ -24,7 +25,8 @@ enum State {
 export class AGameElement extends LitElement {
   static styles = css`
     :host {
-      display: block;
+      display: flex;
+      flex-direction: column;
       position: absolute;
       left: 0;
       top: 0;
@@ -39,7 +41,7 @@ export class AGameElement extends LitElement {
       place-items: center;
       place-content: center;
       min-width: 100%;
-      min-height: 100%;
+      flex: 1 1 auto;
     }
 
     .inner {
@@ -126,6 +128,7 @@ export class AGameElement extends LitElement {
 
   render() {
     return html`
+      <a-timer></a-timer>
       <div class="outer">
         <div class="inner">
           ${this.renderGameState()}

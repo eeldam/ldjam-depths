@@ -53,7 +53,7 @@ export class AWordElement extends LitElement {
   accessor dragging = false;
 
   @property({ type: Boolean })
-  accessor draggable = false;
+  accessor draggable: boolean = false;
 
   render() {
     return html`<span>${this.text}</span>`;
