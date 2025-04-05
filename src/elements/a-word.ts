@@ -1,7 +1,5 @@
-import { LitElement, css } from "lit";
+import { LitElement, css, html } from "lit";
 import { customElement, property } from "lit/decorators.js";
-
-import { eventListener } from "../event-listener.js";
 
 @customElement('a-word')
 export class AWordElement extends LitElement {
@@ -14,6 +12,7 @@ export class AWordElement extends LitElement {
       border-radius: 10px;
 
       cursor: pointer;
+      user-select: none;
     }
 
     :host(:hover) {
@@ -26,6 +25,10 @@ export class AWordElement extends LitElement {
     :host([droptarget]) {
       border: 1px dashed black;
     }
+
+    span {
+      pointer-events: none;
+    }
   `;
 
   @property({ attribute: false })
@@ -35,11 +38,6 @@ export class AWordElement extends LitElement {
   accessor droptarget = false;
 
   render() {
-    return this.text;
-  }
-
-  @eventListener('touchstart', false)
-  handleTouchStart(e: TouchEvent) {
-    e.preventDefault();
+    return html`<span>${this.text}</span>`;
   }
 }

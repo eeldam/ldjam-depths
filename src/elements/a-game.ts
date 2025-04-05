@@ -56,7 +56,7 @@ export class AGameElement extends LitElement {
 
   willUpdate() {
     const { dropTarget } = this;
-    if (!dropTarget) {
+    if (!dropTarget || !this.draggedElement) {
       this._dropTargetSentenceIndex = -1;
       this._dropTargetWordIndex = -1;
     } else if (dropTarget instanceof ASentenceElement) {
@@ -108,7 +108,7 @@ export class AGameElement extends LitElement {
     }
   };
 
-  @eventListener('touchstart')
+  @eventListener('touchstart', false)
   handleTouchStart(e: PointerEvent) {
     if (e.cancelable)
       e.preventDefault();
@@ -116,13 +116,10 @@ export class AGameElement extends LitElement {
 
   @eventListener('pointerdown')
   handlePointerDown(e: PointerEvent) {
-    console.log('x');
     const target = getElementFromPath(e);
     
-    if (!(target instanceof AWordElement)) {
-      console.log('tried to drag', target);
+    if (!(target instanceof AWordElement))
       return;
-    }
 
     this._dragData.anchor(e);
 
