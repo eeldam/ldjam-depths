@@ -8,13 +8,17 @@ export class AWordElement extends LitElement {
       display: inline-block;
 
       padding: .5em 1em;
-      border: 1px solid currentColor;
+      border: 1px solid transparent;
       border-radius: 10px;
 
       cursor: pointer;
       user-select: none;
 
       background-color: #242424;
+    }
+
+    :host([draggable]) {
+      border-color: currentColor;
     }
 
     :host([dragging]) {
@@ -47,6 +51,9 @@ export class AWordElement extends LitElement {
 
   @property({ type: Boolean })
   accessor dragging = false;
+
+  @property({ type: Boolean })
+  accessor draggable = false;
 
   render() {
     return html`<span>${this.text}</span>`;

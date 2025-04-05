@@ -7,6 +7,7 @@ interface WordData {
   text: string;
   isDropTarget: boolean;
   isDragging: boolean;
+  draggable: boolean;
 }
 
 @customElement('a-sentence')
@@ -38,6 +39,7 @@ export class ASentenceElement extends LitElement {
     return this.words.map((data, i) => html`<a-word
       ?droptarget=${data.isDropTarget}
       ?dragging=${data.isDragging}
+      ?draggable=${data.draggable}
       .text=${data.text}
       key=${i}></a-word>`);
   }

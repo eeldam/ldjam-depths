@@ -15,6 +15,16 @@ enum State {
   GameOver,
 }
 
+interface WordData {
+  text: string,
+  draggable: boolean,
+}
+
+function buildSentenceData(text: string, draggableWords: string[]): WordData[] {
+  const draggables = new Set(draggableWords);
+  return text.split(' ').map(text => ({ text, draggable: draggables.has(text) }));
+}
+
 @customElement('a-game')
 export class AGameElement extends LitElement {
   static styles = css`
@@ -59,10 +69,10 @@ export class AGameElement extends LitElement {
   @state()
   accessor state: State = State.Start;
 
-  sentences: string[][] = [
-    'what was that noise'.split(' '),
-    'some thing is wrong'.split(' '),
-    'no no no'.split(' '),
+  sentences: WordData[][] = [
+    buildSentenceData('what was that noise', ['what', 'was']),
+    buildSentenceData('some thing is wrong', ['some', 'was']),
+    buildSentenceData('no no no', ['no', 'no', 'no']),
   ];
 
   _dropTargetSentenceIndex = -1;
@@ -128,10 +138,12 @@ export class AGameElement extends LitElement {
 
       return html`<a-sentence
         ?droptarget=${isSentenceDropTarget}
-        .words=${words.map((text, j) => {
+        .words=${words.map((wordData, j) => {
           const isDropTarget = isSentenceDropTarget && this._dropTargetWordIndex === j;
           const isDragging = isSentenceDragSource && this._dragSourceWordIndex === j;
-          return { text, isDropTarget, isDragging };
+          const { text, draggable } = wordData;
+
+          return { text, isDropTarget, isDragging, draggable };
         })}
         key=${i}></a-sentence>`;
     });
@@ -174,6 +186,9 @@ export class AGameElement extends LitElement {
     const target = getElementFromPath(e);
     
     if (!(target instanceof AWordElement))
+      return;
+
+    if (!target.draggable)
       return;
 
     this._dragData.anchor(e);
