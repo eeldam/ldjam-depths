@@ -13,12 +13,15 @@ export class AGameElement extends LitElement {
   static styles = css`
     :host {
       display: block;
-      width: 100%;
-      height: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
     }
 
     .outer {
-      display: block;
+      display: flex;
       place-items: center;
       place-content: center;
       min-width: 320px;
