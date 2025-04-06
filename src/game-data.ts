@@ -9,7 +9,6 @@ export enum ThoughtType {
 
 export interface WordData {
   text: string,
-  draggable: boolean,
 }
 
 export type SentenceData = {
@@ -52,9 +51,8 @@ const data = {
   thoughts: {} as Record<string, Thought>,
 }
 
-function definePuzzleSentences(text: string, draggableWords: string[]) {
-  const draggables = new Set(draggableWords);
-  const wordData = text.split(' ').map(text => ({ text, draggable: draggables.has(text) }));
+function definePuzzleSentences(text: string) {
+  const wordData = text.split(' ').map(text => ({ text }));
 
   data.thoughts[text] = { type: ThoughtType.Bother, words: wordData, text };
 }
@@ -110,7 +108,7 @@ export function completeSentence(sentence: SentenceData, game: AGameElement) {
 
 /* ------ */
 
-definePuzzleSentences('did i lock the door', ['did']);
+definePuzzleSentences('did i lock the door');
 defineSolutionSentence('i did lock the door', (sentence, game) => {
   removeSentence(sentence, game);
 
@@ -124,8 +122,8 @@ defineSolutionSentence('i did lock the door', (sentence, game) => {
 
 /* ------ */
 
-definePuzzleSentences('some thing is wrong', ['some', 'thing', 'was']);
-definePuzzleSentences('no no no...', ['no']);
+definePuzzleSentences('some thing is wrong');
+definePuzzleSentences('no no no...');
 
 defineSolutionSentence('no thing is wrong', (sentence, game) => {
   // left over = some no no...
@@ -134,7 +132,7 @@ defineSolutionSentence('no thing is wrong', (sentence, game) => {
 
 /* ------ */
 
-definePuzzleSentences('what was that noise', ['what', 'was']);
+definePuzzleSentences('what was that noise');
 defineSolutionSentence('that noise was no thing', (sentence, game) => {
   // left over = some what is wrong no no...
   removeSentence(sentence, game);
@@ -164,7 +162,7 @@ defineLandmineSentence('that noise was some thing', (sentence, game) => {
 
 /* ------ */
 
-definePuzzleSentences('is some one there', ['is', 'there']);
+definePuzzleSentences('is some one there');
 defineSolutionSentence('no one is there', (sentence, game) => {
   removeSentence(sentence, game);
 });

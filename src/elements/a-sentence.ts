@@ -5,15 +5,14 @@ import { classMap } from "lit/directives/class-map.js";
 import './a-word.js';
 
 import { animateIn, animateOut, sleep } from "../utils.js";
-import { isPair } from "../word-data.js";
+import { isPair, isDraggable } from "../word-data.js";
 import { ThoughtType } from "../game-data.js";
 
 
-interface WordData {
+interface SentenceWordData {
   text: string;
   isDropTarget: boolean;
   isDragging: boolean;
-  draggable: boolean;
 }
 
 @customElement('a-sentence')
@@ -145,13 +144,13 @@ export class ASentenceElement extends LitElement {
   accessor droptarget = false;
 
   @property({ attribute: false })
-  accessor words: WordData[] = [];
+  accessor words: SentenceWordData[] = [];
 
   @state()
   accessor locked = true;
 
   render() {
-    let lastData: WordData | null = null;
+    let lastData: SentenceWordData | null = null;
 
     return html`
       <div class="container">
@@ -169,7 +168,7 @@ export class ASentenceElement extends LitElement {
             })}
             ?droptarget=${data.isDropTarget}
             ?dragging=${data.isDragging}
-            ?draggable=${data.draggable && !this.locked}
+            ?draggable=${isDraggable(data.text) && !this.locked}
             .text=${data.text}
             key=${i}
           ></a-word>`

@@ -12,7 +12,6 @@ import { AWordElement } from "./a-word.js";
 import { eventListener, getElementFromPath, getElementFromPoint } from "../event-listener.js";
 import { animateOut, animateIn, getIndexInParent, getParentComponent, sleep } from "../utils.js";
 import { ASentenceElement } from "./a-sentence.js";
-
 import { getThought, checkSentence, completeSentence, ThoughtType } from '../game-data.js';
 
 import type { PropertyValues } from "lit";
@@ -250,9 +249,9 @@ export class AGameElement extends LitElement {
         .words=${data.words.map((wordData, j) => {
           const isDropTarget = isSentenceDropTarget && this._dropTargetWordIndex === j;
           const isDragging = isSentenceDragSource && this._dragSourceWordIndex === j;
-          const { text, draggable } = wordData;
+          const { text } = wordData;
 
-          return { text, isDropTarget, isDragging, draggable };
+          return { text, isDropTarget, isDragging };
         })}
         index=${i}
         key
@@ -426,16 +425,12 @@ export class AGameElement extends LitElement {
     else
       to.words.splice(dropChunkIndex, 0, ...moved);
 
-    let anySentencesComplete = false;
-
     for (let i = 0; i < this.sentences.length; i++) {
       const sentence = this.sentences[i];
 
       const thoughtType = checkSentence(sentence);
       if (thoughtType === ThoughtType.Jumble || thoughtType === ThoughtType.Bother)
         continue;
-
-      anySentencesComplete = true;
 
       if (thoughtType === ThoughtType.Calming)
         this.addRelaxation(sentence.words.length * 10);
