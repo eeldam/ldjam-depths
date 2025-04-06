@@ -273,15 +273,30 @@ export class AGameElement extends LitElement {
   _dragData = {
     x: 0,
     y: 0,
+    lastX: 0,
+    lastY: 0,
     anchor(e: PointerEvent) {
       this.x = e.clientX;
       this.y = e.clientY;
+      this.lastX = this.x;
+      this.lastY = this.y;
     },
     getTransform(e: PointerEvent) {
       const x = e.clientX - this.x;
       const y = e.clientY - this.y;
-      return `translate(${x}px, ${y}px)`;
-    }
+      const deltaX = this.lastX - x;
+      const deltaY = this.lastY - y;
+
+      const distance = Math.sqrt((deltaX**2) + (deltaY**2));
+      this.lastX = x;
+      this.lastY = y;
+
+      const normalX = deltaX / distance;
+      
+      return `scale(1.1) translate(${x}px, ${y}px) rotate(${-normalX * distance}deg)`;
+    },
+
+    baseTransform: `scale(1) translate(0px, 0px) rotate(0deg)`,
   };
 
   @eventListener('touchstart', false)
@@ -301,10 +316,11 @@ export class AGameElement extends LitElement {
       return;
 
     this._dragData.anchor(e);
-
+    
     this.draggedElement = target;
-    this.draggedElement.style.transform = `translate(0px, 0px)`;
+    this.draggedElement.style.transform = this._dragData.baseTransform;
     this.draggedElement.style.zIndex = '100';
+    this.dropTarget = getParentComponent(target);
   }
 
   @eventListener('pointermove')
@@ -342,7 +358,7 @@ export class AGameElement extends LitElement {
 
     }
 
-    this.draggedElement.style.transform = `translate(0px, 0px)`;
+    this.draggedElement.style.transform = this._dragData.baseTransform;
     this.draggedElement.style.pointerEvents = 'initial';
     this.draggedElement = null;
     this.dropTarget = null;
