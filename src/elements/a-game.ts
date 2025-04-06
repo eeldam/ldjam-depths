@@ -114,9 +114,17 @@ export class AGameElement extends LitElement {
   newThoughtCooldown = 5;
 
   @state()
+  accessor sleepLevel = 1; // range 0 - 4;
+
+  @state()
+  accessor rest = 0;
+
+  @state()
   accessor animateIn: boolean = false;
 
   sentences: SentenceData[] = [];
+
+  maxThoughts = 6;
 
   _dropTargetSentenceIndex = -1;
   _dropTargetWordIndex = -1;
@@ -153,9 +161,13 @@ export class AGameElement extends LitElement {
     if (count < 1) return;
 
     for (let i = 0; i < count; i++) {
-      const sentence = getBother();
-      this.sentences.push(sentence)
-      this.requestUpdate();
+      if (this.sentences.length >= this.maxThoughts) {
+        this.sleepLevel = Math.max(0, this.sleepLevel - 1);
+      } else {
+        const sentence = getBother();
+        this.sentences.push(sentence)
+        this.requestUpdate();
+      }
       await sleep(1000);
     }
   }
@@ -178,10 +190,22 @@ export class AGameElement extends LitElement {
   }
 
   onTimerTick = (_timer: ATimerElement) => {
+    // either 2 ** sleep
+    // = 1, 2, 4, 8, 16 [32]
+    // or 2**sleep - 1
+    // = 0, 1, 3, 7, 15
+    // or sleep ** 2
+    // = 0, 1, 4, 9, 16 [25]    
+    this.rest += (2 ** this.sleepLevel) - 1;
+
     if (this.timeToNextThought)
       this.timeToNextThought -= 1;
 
     if (this.timeToNextThought <= 0) {
+      if (this.sleepLevel === 0)
+        this.sleepLevel = 1;
+      if (this.sleepLevel > 1)
+        this.sleepLevel -= 1;
       this.loadBother(1);
       this.resetTimeToNextThought();
     }
@@ -205,8 +229,14 @@ export class AGameElement extends LitElement {
           ${this.renderGameState()}
         </div>
       </div>
-      <div class=${classMap({ stats: true, hidden: this.timeToNextThought > this.timeBetweenThoughts || this.state !== State.Playing })}>
-        <a-bar .fill=${this.timeToNextThought} .max=${this.timeBetweenThoughts}></a-bar>
+      <div class="stats">
+        <a-bar
+          class=${classMap({ hidden: this.timeToNextThought > this.timeBetweenThoughts || this.state !== State.Playing })}
+          .fill=${this.timeToNextThought} .max=${this.timeBetweenThoughts}></a-bar>
+        <br>
+        Sleep Level: ${this.sleepLevel}
+        <br>
+        Rest: ${this.rest}
       </div>
     `;
   }
@@ -452,6 +482,11 @@ export class AGameElement extends LitElement {
         continue;
 
       anyCompleted = true;
+
+      if (thoughtType === ThoughtType.Calming)
+        this.sleepLevel = Math.min(4, this.sleepLevel + 1);
+      else if (thoughtType === ThoughtType.Worrying)
+        this.sleepLevel = Math.max(0, this.sleepLevel - 1);
       
       const el = this.shadowRoot?.querySelector<ASentenceElement>(`a-sentence[index="${i}"]`);
       // TODO lock game during this?
