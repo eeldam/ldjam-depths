@@ -1,9 +1,11 @@
 import { LitElement, PropertyValues, css, html } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { classMap } from "lit/directives/class-map.js";
 
 import './a-word.js';
 
 import { animateIn, animateOut, sleep } from "../utils.js";
+import { isPair } from "../word-data.js";
 
 interface WordData {
   text: string;
@@ -38,6 +40,37 @@ export class ASentenceElement extends LitElement {
 
     :host(.animate-in) {
       animation: 1s ease 1 forwards growup;
+    }
+
+    :host {
+      --pair-border: 1px solid #424242;
+    }
+
+    :host(.complete) {
+      --pair-border: none;
+    }
+
+
+    a-word {
+      transition:
+        padding .3s linear,
+        margin .3s linear;
+    }
+    /* Word Pair Stylings */
+    a-word.pre-pair {
+      padding-right: 0;
+      border-right: var(--pair-border);
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      margin-right: -.25em;
+    }
+
+    a-word.post-pair {
+      padding-left: 0;
+      border-left: var(--pair-border);
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      margin-left: -.25em;
     }
 
     a-word.animate-in {
@@ -109,14 +142,29 @@ export class ASentenceElement extends LitElement {
   accessor locked = true;
 
   render() {
+    let lastData: WordData | null = null;
+
     return html`
       <div class="container">
-        ${this.words.map((data, i) => html`<a-word
-          ?droptarget=${data.isDropTarget}
-          ?dragging=${data.isDragging}
-          ?draggable=${data.draggable && !this.locked}
-          .text=${data.text}
-          key=${i}></a-word>`)}
+        ${this.words.map((data, i) => {
+          const beforeWord = lastData;
+          lastData = data;
+          const nextWord = i < (this.words.length - 1) ? this.words[i + 1] : null;
+
+
+
+          return html`<a-word
+            class=${classMap({
+              'pre-pair': !(data.isDragging || !nextWord || nextWord.isDragging) && isPair(data.text, nextWord.text),
+              'post-pair': !(data.isDragging || !beforeWord || beforeWord.isDragging) && isPair(beforeWord.text, data.text),
+            })}
+            ?droptarget=${data.isDropTarget}
+            ?dragging=${data.isDragging}
+            ?draggable=${data.draggable && !this.locked}
+            .text=${data.text}
+            key=${i}
+          ></a-word>`
+        })}
       </div>
     `;
   }
