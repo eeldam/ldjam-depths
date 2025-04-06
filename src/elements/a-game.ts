@@ -2,14 +2,13 @@ import { LitElement, css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { keyed } from 'lit/directives/keyed.js';
 
-
 import './a-sentence.js';
 import './a-button.js';
 import './a-timer.js';
 import { AWordElement } from "./a-word.js";
 
 import { eventListener, getElementFromPath, getElementFromPoint } from "../event-listener.js";
-import { getIndexInParent, getParentComponent, sleep } from "../utils.js";
+import { animateOut, animateIn, getIndexInParent, getParentComponent, sleep } from "../utils.js";
 import { ASentenceElement } from "./a-sentence.js";
 
 import { getScary, checkSentence, completeSentence } from '../game-data.js';
@@ -19,6 +18,8 @@ import type { SentenceData } from "../game-data.js";
 
 enum State {
   Start,
+  HowToPlay,
+  BeforePlaying,
   Playing,
   GameOver,
 }
@@ -53,6 +54,34 @@ export class AGameElement extends LitElement {
       align-items: center;
       padding: 15px;
     }
+
+    .spacer {
+      padding: 5px 0 15px;
+      display: block;
+    }
+
+    .outer.animate-out {
+      animation: 1s ease 1 forwards fadeout;
+    }
+
+    .outer.animate-in {
+      animation: .5s ease 1 backwards fadein;
+    }
+
+    @keyframes fadeout {
+      0% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes fadein {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
   `;
 
   @state()
@@ -63,6 +92,9 @@ export class AGameElement extends LitElement {
 
   @state()
   accessor state: State = State.Start;
+
+  @state()
+  accessor animateIn: boolean = false;
 
   sentences: SentenceData[] = [];
 
@@ -114,12 +146,17 @@ export class AGameElement extends LitElement {
     if (changedProperties.has('state')) {
       if (this.state === State.Playing)
         this.loadSentenceData(['did i lock the door']);
+      else if (this.state === State.BeforePlaying) {
+        sleep(3500).then(() => {
+          this.transitionScene(State.Playing);
+        })
+      }
     }
   }
 
   render() {
     return html`
-      <a-timer></a-timer>
+      <a-timer .ticking=${this.state === State.Playing}></a-timer>
       <div class="outer">
         <div class="inner">
           ${this.renderGameState()}
@@ -132,6 +169,10 @@ export class AGameElement extends LitElement {
     switch (this.state) {
       case State.Start:
         return this.renderStart();
+      case State.HowToPlay:
+        return this.renderHowToPlay();
+      case State.BeforePlaying:
+        return this.renderBeforePlaying();
       case State.Playing:
         return this.renderPlaying();
       case State.GameOver:
@@ -142,10 +183,34 @@ export class AGameElement extends LitElement {
   renderStart() {
     return html`
       <a-button @click=${this.handleStartButton}>Go to sleep...</a-button>
+      <div class="spacer">...</div>
+      <a-button @click=${this.handleHowToPlayButton}>...what am I doing?</a-button>
+    `;
+  }
+
+  renderHowToPlay() {
+    return html`
+      <p>Drag outlined words to reorder them</p>
+      ${this.renderSentences()}
+      <p>Turn anxious thoughts into calm ones to clear your head</p>
+
+      <div class="spacer"></div>
+
+      <a-button @click=${this.handleStartButton}>Go to sleep...</a-button>
+    `;
+  }
+
+  renderBeforePlaying() {
+    return html`
+      just need to clear my head a bit...
     `;
   }
 
   renderPlaying() {
+    return this.renderSentences();
+  }
+
+  renderSentences() {
     return this.sentences.map((data, i) => {
       const isSentenceDropTarget = this._dropTargetSentenceIndex === i;
       const isSentenceDragSource = this._dragSourceSentenceIndex === i;
@@ -171,10 +236,37 @@ export class AGameElement extends LitElement {
     `;
   }
 
+  // ugly but i don't have time for it
+  transitionScene(state: State) {
+    if (state === this.state) {
+      throw new Error('unexpected state change to existing state');
+    }
+
+    const target = this.shadowRoot?.querySelector<HTMLElement>('.outer')!;
+
+    if (!target) {
+      this.state = state;
+      return;
+    }
+
+    animateOut(target, () => {
+      this.animateIn = true;
+      this.state = state;
+      
+      animateIn(target, () => {
+        this.animateIn = false;
+      });
+    });
+  }
+
   handleStartButton(e: Event) {
     e.stopPropagation();
-
-    this.state = State.Playing;
+    this.transitionScene(State.BeforePlaying);
+  }
+  
+  handleHowToPlayButton(e: Event) {
+    e.stopPropagation();
+    this.transitionScene(State.HowToPlay);
   }
 
   _dragData = {

@@ -79,10 +79,10 @@ defineScarySentence('what was that noise', ['what', 'was']);
 defineScarySentence('some thing is wrong', ['some', 'thing', 'was']);
 defineScarySentence('no no no...', ['no']);
 
-defineCalmySentence('that noise was no thing', () => {
-
+defineCalmySentence('that noise was no thing', (sentence, game) => {
+  removeSentence(sentence, game);
 });
 
-defineCalmySentence('no thing is wrong', () => {
-
+defineCalmySentence('no thing is wrong', (sentence, game) => {
+  removeSentence(sentence, game);
 });

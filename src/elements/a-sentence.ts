@@ -79,6 +79,7 @@ export class ASentenceElement extends LitElement {
       border-color: transparent;
       background-color: transparent;
       font-weight: 600;
+      color: white;
     }
 
     :host(.animate-out) {

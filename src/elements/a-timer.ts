@@ -1,5 +1,5 @@
-import { LitElement, css, html } from "lit";
-import { customElement, state } from "lit/decorators.js";
+import { LitElement, PropertyValues, css, html } from "lit";
+import { customElement, state, property } from "lit/decorators.js";
 
 @customElement('a-timer')
 export class ATimerElement extends LitElement {
@@ -15,20 +15,42 @@ export class ATimerElement extends LitElement {
   @state()
   accessor elapsed = 0;
 
+  @property({ attribute: false })
+  accessor ticking = false;
+
+  private isTicking = false;
+
   interval = 0;
 
   startingHour = 1;
 
   connectedCallback(): void {
     super.connectedCallback();
-    this.interval = setInterval(() => {
-      this.elapsed += 1;
-    }, 1000);
+    this.updateTimer();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     clearInterval(this.interval);
+    this.isTicking = false;
+  }
+
+  updateTimer() {
+    if (this.ticking && !this.isTicking) {
+      this.interval = setInterval(() => {
+        this.elapsed += 1;
+      }, 1000);
+      this.isTicking = true;
+    } else if (!this.ticking && this.isTicking) {
+      clearInterval(this.interval);
+      this.isTicking = false;
+    }
+  }
+
+  protected willUpdate(_changedProperties: PropertyValues): void {
+    if (_changedProperties.has('ticking')) {
+      this.updateTimer();
+    }
   }
 
   render() {
