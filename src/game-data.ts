@@ -108,9 +108,13 @@ export function completeSentence(sentence: SentenceData, game: AGameElement) {
     thought.callback(sentence, game);
 }
 
+/* ------ */
+
 definePuzzleSentences('did i lock the door', ['did']);
 defineSolutionSentence('i did lock the door', (sentence, game) => {
   removeSentence(sentence, game);
+
+  // TODO replace with something that follows from the locked door thread
   game.loadSentenceData([
     'what was that noise',
     'some thing is wrong',
@@ -118,22 +122,34 @@ defineSolutionSentence('i did lock the door', (sentence, game) => {
   ]);
 });
 
-definePuzzleSentences('what was that noise', ['what', 'was']);
+/* ------ */
+
 definePuzzleSentences('some thing is wrong', ['some', 'thing', 'was']);
 definePuzzleSentences('no no no...', ['no']);
 
-defineSolutionSentence('that noise was no thing', (sentence, game) => {
-  removeSentence(sentence, game);
-});
-
 defineSolutionSentence('no thing is wrong', (sentence, game) => {
+  // left over = some no no...
   removeSentence(sentence, game);
 });
 
+/* ------ */
+
+definePuzzleSentences('what was that noise', ['what', 'was']);
+defineSolutionSentence('that noise was no thing', (sentence, game) => {
+  // left over = some what is wrong no no...
+  removeSentence(sentence, game);
+});
+
+//TODO deduplicate
 defineLandmineSentence('that was no noise', (sentence, game) => {
   // TODO - have this call into the game to mark it as a bad thing?
   // then way we do game.loadSentenceData?
+  // left over = some thing is wrong what no no...
+  // can still do "no thing is wrong" and have "some what no..."
   removeSentence(sentence, game);
+  game.loadSentenceData([
+    'is some one there',
+  ]);
 });
 
 // todo - didn't work?
@@ -141,8 +157,27 @@ defineLandmineSentence('that noise was some thing', (sentence, game) => {
   // TODO - have this call into the game to mark it as a bad thing?
   // then way we do game.loadSentenceData?
   removeSentence(sentence, game);
+  game.loadSentenceData([
+    'is some one there',
+  ]);
 });
 
+/* ------ */
+
+definePuzzleSentences('is some one there', ['is', 'there']);
+defineSolutionSentence('no one is there', (sentence, game) => {
+  removeSentence(sentence, game);
+});
+
+defineLandmineSentence('there is some one', (sentence, game) => {
+  removeSentence(sentence, game);
+});
+
+defineLandmineSentence('some one is there', (sentence, game) => {
+  removeSentence(sentence, game);
+});
+
+/* ------ */
 
 defineLandmineSentence('some thing is very wrong', (sentence, game) => {
   // TODO where does the very come from?

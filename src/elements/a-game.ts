@@ -145,7 +145,7 @@ export class AGameElement extends LitElement {
       if (sentence) {
         this.sentences.push(sentence);
         this.requestUpdate();
-        await sleep(500);
+        await sleep(1000);
       }
     }
   }
