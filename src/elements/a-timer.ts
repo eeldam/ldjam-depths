@@ -24,12 +24,19 @@ export class ATimerElement extends LitElement {
   @state()
   accessor elapsed = 0;
 
+  get isTicking() {
+    return this.tickRate > 0;
+  }
+
   @property({ attribute: false })
-  accessor ticking = false;
+  accessor tickRate = 0;
 
-  private isTicking = false;
+  @property({ attribute: false })
+  accessor onTick: ((timer: ATimerElement) => void) | null = null;
 
-  interval = 0;
+  private isTimerGoing = false;
+
+  timeout = 0;
 
   startingHour = -2;
 
@@ -40,24 +47,30 @@ export class ATimerElement extends LitElement {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    clearInterval(this.interval);
-    this.isTicking = false;
+    clearTimeout(this.timeout);
+    this.isTimerGoing = false;
+  }
+
+  timerFunction = () => {
+    this.elapsed += 1;
+    if (this.onTick)
+      this.onTick(this);
+    if (this.isTimerGoing)
+      this.timeout = setTimeout(this.timerFunction, this.tickRate);
   }
 
   updateTimer() {
-    if (this.ticking && !this.isTicking) {
-      this.interval = setInterval(() => {
-        this.elapsed += 1;
-      }, 1000);
-      this.isTicking = true;
-    } else if (!this.ticking && this.isTicking) {
-      clearInterval(this.interval);
-      this.isTicking = false;
+    if (this.isTicking && !this.isTimerGoing) {
+      this.timeout = setTimeout(this.timerFunction, this.tickRate);
+      this.isTimerGoing = true;
+    } else if (!this.isTicking && this.isTimerGoing) {
+      clearTimeout(this.timeout);
+      this.isTimerGoing = false;
     }
   }
 
   protected willUpdate(_changedProperties: PropertyValues): void {
-    if (_changedProperties.has('ticking')) {
+    if (_changedProperties.has('tickRate')) {
       this.updateTimer();
     }
   }

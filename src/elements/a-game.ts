@@ -155,9 +155,17 @@ export class AGameElement extends LitElement {
     }
   }
 
+  onTimerTick = (_minutesElapsed: number) => {}
+
+  get timerTickRate() {
+    if (this.state !== State.Playing)
+      return 0;
+    return 1000;
+  }
+
   render() {
     return html`
-      <a-timer .ticking=${this.state === State.Playing}></a-timer>
+      <a-timer .tickRate=${this.timerTickRate}></a-timer>
       <div class="outer">
         <div class="inner">
           ${this.renderGameState()}
