@@ -286,8 +286,8 @@ export class AGameElement extends LitElement {
     anchor(e: PointerEvent) {
       this.x = e.clientX;
       this.y = e.clientY;
-      this.lastX = this.x;
-      this.lastY = this.y;
+      this.lastX = 0;
+      this.lastY = 0;
     },
     getTransform(e: PointerEvent) {
       const x = e.clientX - this.x;
@@ -295,7 +295,7 @@ export class AGameElement extends LitElement {
       const deltaX = this.lastX - x;
       const deltaY = this.lastY - y;
 
-      const distance = Math.min(15, Math.max(-15, Math.sqrt((deltaX**2) + (deltaY**2))));
+      const distance =  Math.sqrt((deltaX**2) + (deltaY**2));
       this.lastX = x;
       this.lastY = y;
 
