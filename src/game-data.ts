@@ -169,6 +169,7 @@ defineSolutionSentences([
 ]);
 
 defineLandmineSentences([
+  'i did not lock the door',
   'that was no thing',
   'that was no noise',
   'that noise was some thing',
