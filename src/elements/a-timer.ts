@@ -31,7 +31,7 @@ export class ATimerElement extends LitElement {
 
   interval = 0;
 
-  startingHour = 1;
+  startingHour = -2;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -67,11 +67,11 @@ export class ATimerElement extends LitElement {
     if (minutes.length === 1) minutes = '0' + minutes;
     
     const hourCount = this.startingHour + Math.floor(this.elapsed / 60);
-    let hours = (hourCount % 12 ).toString()
+    let hours = ((hourCount + 12) % 12 ).toString()
     if (hours === '0') hours = '12';
     if (hours.length === 1) hours = '0' + hours;
 
-    const isPm = hourCount % 24 >= 12;
+    const isPm = (hourCount + 24) % 24 >= 12;
 
     return html`
       <span class="digit">${hours[0]}</span>
