@@ -135,6 +135,9 @@ export class AGameElement extends LitElement {
   _dropTargetWordIndex = -1;
   _dragSourceSentenceIndex = -1;
   _dragSourceWordIndex = -1;
+  _isValidDropTarget = false;
+
+  maxSentenceLength = 6;
 
   updateDragAndDropIndices() {
     const { dropTarget } = this;
@@ -145,6 +148,7 @@ export class AGameElement extends LitElement {
       this._dropTargetWordIndex = -1;
       this._dragSourceSentenceIndex = -1;
       this._dragSourceWordIndex = -1;
+      this._isValidDropTarget = false;
       return;
     } 
     
@@ -154,10 +158,12 @@ export class AGameElement extends LitElement {
     if (dropTarget instanceof ASentenceElement) {
       this._dropTargetSentenceIndex = getIndexInParent(dropTarget);
       this._dropTargetWordIndex = -1;
+      this._isValidDropTarget = dropTarget.words.length < this.maxSentenceLength;
     } else if (dropTarget instanceof AWordElement) {
       this._dropTargetWordIndex = getIndexInParent(dropTarget);
-      const sentence = getParentComponent(dropTarget);
+      const sentence = getParentComponent(dropTarget) as (ASentenceElement | null);
       this._dropTargetSentenceIndex = sentence ? getIndexInParent(sentence) : -1;
+      this._isValidDropTarget = sentence ? sentence.words.length < this.maxSentenceLength : false;
     }
   }
 
@@ -254,6 +260,8 @@ export class AGameElement extends LitElement {
         <br>
         Sleep Level: ${this.sleepLevel}
         <br>
+        (+${(2 ** this.sleepLevel) - 1} rest/min)
+        <br>
         Rest: ${this.rest}
       </div>
     `;
@@ -285,8 +293,14 @@ export class AGameElement extends LitElement {
   renderHowToPlay() {
     return html`
       <p>Drag outlined words to reorder them</p>
-      ${this.renderSentences()}
-      <p>Turn anxious thoughts into calm ones to clear your head</p>
+      
+      <p>Create calm thoughts to reach deeper sleep</p>
+      
+      <p>Avoid creating upsetting thoughts</p>
+
+      <p>Keep your mind clear</p>
+
+      <p>Try to get as much rest as possible before morning</p>
 
       <div class="spacer"></div>
 
@@ -310,7 +324,8 @@ export class AGameElement extends LitElement {
       const isSentenceDragSource = this._dragSourceSentenceIndex === i;
 
       return keyed(data.id, html`<a-sentence
-        ?droptarget=${isSentenceDropTarget}
+        ?droptarget=${isSentenceDropTarget && this._isValidDropTarget}
+        ?invaliddrop=${isSentenceDropTarget && !this._isValidDropTarget}
         .words=${data.words.map((wordData, j) => {
           const isDropTarget = isSentenceDropTarget && this._dropTargetWordIndex === j;
           const isDragging = isSentenceDragSource && this._dragSourceWordIndex === j;
@@ -499,7 +514,7 @@ export class AGameElement extends LitElement {
   }
 
   resolveDrop() {
-    if (!this.draggedElement)
+    if (!this.draggedElement || !this._isValidDropTarget)
       return;
 
     const dragContainerIndex = this._dragSourceSentenceIndex;

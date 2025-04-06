@@ -7,7 +7,7 @@ export class AWordElement extends LitElement {
     :host {
       display: inline-block;
 
-      padding: .5em 1em;
+      padding: .5em .75em;
       border: 1px solid transparent;
       border-radius: 10px;
 
@@ -18,6 +18,7 @@ export class AWordElement extends LitElement {
     }
 
     :host([draggable]) {
+      padding: .5em 1em;
       border-color: currentColor;
     }
 

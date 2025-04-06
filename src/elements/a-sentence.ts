@@ -30,9 +30,13 @@ export class ASentenceElement extends LitElement {
       border-radius: 15px;
       padding: 10px;
       display: flex;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       gap: .5em;
       justify-content: center;
+    }
+
+    :host([invaliddrop]) .container {
+      background: #842424;
     }
 
     :host([droptarget]) .container {
@@ -146,6 +150,9 @@ export class ASentenceElement extends LitElement {
 
   @property({ type: Boolean })
   accessor droptarget = false;
+  
+  @property({ type: Boolean })
+  accessor invaliddrop = false;
 
   @property({ attribute: false })
   accessor words: SentenceWordData[] = [];
