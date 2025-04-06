@@ -298,6 +298,8 @@ export class AGameElement extends LitElement {
       
       <p>Avoid creating upsetting thoughts</p>
 
+      <p>Thoughts can't get too complicated</p>
+
       <p>Keep your mind clear</p>
 
       <p>Try to get as much rest as possible before morning</p>
