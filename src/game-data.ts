@@ -1,3 +1,5 @@
+import type { AGameElement } from "./elements/a-game.js";
+
 export interface WordData {
   text: string,
   draggable: boolean,
@@ -8,8 +10,8 @@ export type SentenceData = {
   id: number;
 }
 
-export type SentenceMutator = {
-  (sentences: SentenceData[], i: number): void;
+export type Callback = {
+  (sentence: SentenceData, game: AGameElement): Promise<void> | void;
 }
 
 // TODO this might be a bad idea
@@ -20,7 +22,7 @@ function getUniqueId() {
 
 const data = {
   scaries: {} as Record<string, WordData[]>,
-  calmies: {} as Record<string, SentenceMutator>,
+  calmies: {} as Record<string, Callback>,
 }
 
 function defineScarySentence(text: string, draggableWords: string[]) {
@@ -30,7 +32,7 @@ function defineScarySentence(text: string, draggableWords: string[]) {
   data.scaries[text] = wordData;
 }
 
-function defineCalmySentence(text: string, mutator: SentenceMutator = () => {}) {
+function defineCalmySentence(text: string, mutator: Callback) {
   data.calmies[text] = mutator;
 }
 
@@ -46,37 +48,41 @@ export function checkSentence(sentence: SentenceData) {
   return false;
 }
 
+function removeSentence(sentence: SentenceData, game: AGameElement): number {
+  const i = game.sentences.indexOf(sentence);
+  if (i >= 0)
+    game.sentences.splice(i, 1);
+  return i;
+}
+
 // TODO - really not great to do this here, i have no control over timing in the game
 
-export function completeSentence(sentence: SentenceData, sentences: SentenceData[]) {
+export function completeSentence(sentence: SentenceData, game: AGameElement) {
   const text = sentence.words.map(word => word.text).join(' ');
 
   const mutator = data.calmies[text];
-  if (!mutator)
-    return;
-
-  const i = sentences.indexOf(sentence);
-  if (i >= 0)
-    sentences.splice(i, 1);
-
-  mutator(sentences, i);
+  if (mutator)
+    mutator(sentence, game);
 }
 
 defineScarySentence('did i lock the door', ['did']);
-defineCalmySentence('i did lock the door', (sentences, _i) => {
-  sentences.push(getScary('what was that noise'));
-  sentences.push(getScary('some thing is wrong'));
-  sentences.push(getScary('no no no...'));
+defineCalmySentence('i did lock the door', (sentence, game) => {
+  removeSentence(sentence, game);
+  game.loadSentenceData([
+    'what was that noise',
+    'some thing is wrong',
+    'no no no...',
+  ]);
 });
 
 defineScarySentence('what was that noise', ['what', 'was']);
 defineScarySentence('some thing is wrong', ['some', 'thing', 'was']);
 defineScarySentence('no no no...', ['no']);
 
-defineCalmySentence('that noise was no thing', (_sentences, _i) => {
+defineCalmySentence('that noise was no thing', () => {
 
 });
 
-defineCalmySentence('no thing is wrong', (_sentences, _i) => {
+defineCalmySentence('no thing is wrong', () => {
 
 });

@@ -303,7 +303,7 @@ export class AGameElement extends LitElement {
           throw new Error('unexpected sentence change!')
 
         // TODO - stagger if multiple sentences completed simultatenously?
-        completeSentence(sentence, this.sentences);
+        completeSentence(sentence, this);
         this.requestUpdate();
         });
     }
