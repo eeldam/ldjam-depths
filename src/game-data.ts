@@ -2,6 +2,7 @@ import type { AGameElement } from "./elements/a-game.js";
 
 export enum ThoughtType {
   Jumble, // unregocnized
+  Empty, // no words
   Bother, // puzzle sentences,
   Calming, // good solution
   Worrying, // bad solution
@@ -93,6 +94,9 @@ export function getThought(text: string): SentenceData | null {
 }
 
 export function checkSentence(sentence: SentenceData): ThoughtType {
+  if (sentence.words.length === 0)
+    return ThoughtType.Empty;
+
   const text = sentence.words.map(word => word.text).join(' ');
   if (text in data.thoughts) {
     return data.thoughts[text].type;
@@ -114,6 +118,11 @@ function defaultCallback(sentence: SentenceData, game: AGameElement) {
 // TODO - really not great to do this here, i have no control over timing in the game
 
 export function completeSentence(sentence: SentenceData, game: AGameElement) {
+  if (sentence.words.length === 0) {
+    removeSentence(sentence, game);
+    return;
+  }
+
   const text = sentence.words.map(word => word.text).join(' ');
 
   const thought = data.thoughts[text];
@@ -138,6 +147,7 @@ definePuzzleSentences([
   'what is wrong with me',
   'can not get comfort able',
   'how much to do tomorrow',
+  'no no no',
 ]);
 
 defineSolutionSentences([

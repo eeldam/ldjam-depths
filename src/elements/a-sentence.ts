@@ -104,6 +104,10 @@ export class ASentenceElement extends LitElement {
       visibility: hidden;
     }
 
+    :host {
+      --type-color: #242424;
+    }
+
     :host(.calming) {
       --type-color: rgb(47 143 255);
     }
@@ -188,6 +192,7 @@ export class ASentenceElement extends LitElement {
     [ThoughtType.Jumble]: 'jumble',
     [ThoughtType.Worrying]: 'worrying',
     [ThoughtType.Calming]: 'calming',
+    [ThoughtType.Empty]: 'empty',
 
   }
 
