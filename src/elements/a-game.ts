@@ -89,12 +89,16 @@ export class AGameElement extends LitElement {
     .stats {
       text-align: center;
       padding-bottom: 5px;
+    }
+    
+    .stats a-bar {
       opacity: 1;
       transition: opacity .5s ease;
+      height: 5px;
     }
 
-    .hidden {
-      opacity: 0;
+    .stats .hidden {
+      opacity: .2;
     }
   `;
 
@@ -110,7 +114,7 @@ export class AGameElement extends LitElement {
   @state()
   accessor timeToNextThought = 0;
 
-  timeBetweenThoughts = 15;
+  timeBetweenThoughts = 10;
   newThoughtCooldown = 5;
 
   @state()
@@ -160,17 +164,15 @@ export class AGameElement extends LitElement {
     // TODO - update game state to disallow playing during this?
     if (count < 1) return;
 
-
-
     for (let i = 0; i < count; i++) {
       if (this.sentences.length >= this.maxThoughts) {
-        completeSentence(this.sentences[0], this);
+        this.destroySentence(0, ThoughtType.Worrying);
         this.sleepLevel = Math.max(0, this.sleepLevel - 1);
-      } else {
-        const sentence = getBother();
-        this.sentences.push(sentence)
-        this.requestUpdate();
       }
+
+      const sentence = getBother();
+      this.sentences.push(sentence)
+      this.requestUpdate();
       await sleep(1000);
     }
   }
@@ -304,7 +306,6 @@ export class AGameElement extends LitElement {
           return { text, isDropTarget, isDragging };
         })}
         index=${i}
-        key
       ></a-sentence>`);
     });
   }
@@ -491,24 +492,29 @@ export class AGameElement extends LitElement {
       else if (thoughtType === ThoughtType.Worrying)
         this.sleepLevel = Math.max(0, this.sleepLevel - 1);
       
-      const el = this.shadowRoot?.querySelector<ASentenceElement>(`a-sentence[index="${i}"]`);
-      // TODO lock game during this?
-      if (el)
-        el.destroy(thoughtType, () => {
-
-        // TODO unlock game
-        if (this.sentences[i] !== sentence)
-          throw new Error('unexpected sentence change!')
-
-        // TODO - stagger if multiple sentences completed simultatenously?
-        completeSentence(sentence, this);
-        this.requestUpdate();
-        });
+      this.destroySentence(i, thoughtType);
     }
 
     if (anyCompleted)
       this.resetTimeToNextThought();
 
     this.requestUpdate();
+  }
+
+  destroySentence(i: number, asType: ThoughtType) {
+    const sentence = this.sentences[i];
+    const el = this.shadowRoot?.querySelector<ASentenceElement>(`a-sentence[index="${i}"]`);
+    // TODO lock game during this?
+    if (el)
+      el.destroy(asType, () => {
+
+      // TODO unlock game
+      if (this.sentences[i] !== sentence)
+        throw new Error('unexpected sentence change!')
+
+      // TODO - stagger if multiple sentences completed simultatenously?
+      completeSentence(sentence, this);
+      this.requestUpdate();
+    });
   }
 }

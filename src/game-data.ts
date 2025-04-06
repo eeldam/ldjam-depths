@@ -128,12 +128,13 @@ export function completeSentence(sentence: SentenceData, game: AGameElement) {
   const thought = data.thoughts[text];
 
   if (!thought)
-    return;
-
-  if (thought.type === ThoughtType.Calming)
+    removeSentence(sentence, game);
+  else if (thought.type === ThoughtType.Calming)
     thought.callback(sentence, game);
   else if (thought.type === ThoughtType.Worrying)
     thought.callback(sentence, game);
+  else
+    removeSentence(sentence, game);
 }
 
 /* ------ */
