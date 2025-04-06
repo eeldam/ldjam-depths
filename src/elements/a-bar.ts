@@ -21,6 +21,7 @@ export class ABarElement extends LitElement {
       bottom: 0;
       background-color: currentColor;
       right: var(--right-position);
+      transition: right .3s linear;
     }
   `;
 

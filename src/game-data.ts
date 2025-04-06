@@ -49,19 +49,36 @@ function getUniqueId() {
 
 const data = {
   thoughts: {} as Record<string, Thought>,
+  bothers: [] as BotherThought[],
 }
 
-function definePuzzleSentences(text: string) {
+function definePuzzleSentences(texts: string[]) {
+  for (let text of texts)
+    definePuzzleSentence(text);
+}
+
+function definePuzzleSentence(text: string) {
   const wordData = text.split(' ').map(text => ({ text }));
-
-  data.thoughts[text] = { type: ThoughtType.Bother, words: wordData, text };
+  const bother = { type: ThoughtType.Bother as const, words: wordData, text };
+  data.thoughts[text] = bother;
+  data.bothers.push(bother);
 }
 
-function defineSolutionSentence(text: string, callback: Callback) {
+function defineSolutionSentences(texts: string[], callback: Callback = defaultCallback) {
+  for (let text of texts)
+    defineSolutionSentence(text, callback);
+}
+
+function defineSolutionSentence(text: string, callback: Callback = defaultCallback) {
   data.thoughts[text] = { type: ThoughtType.Calming, text, callback };
 }
 
-function defineLandmineSentence(text: string, callback: Callback) {
+function defineLandmineSentences(texts: string[], callback: Callback = defaultCallback) {
+  for (let text of texts)
+    defineLandmineSentence(text, callback);
+}
+
+function defineLandmineSentence(text: string, callback: Callback = defaultCallback) {
   data.thoughts[text] = { type: ThoughtType.Worrying, text, callback }
 }
 
@@ -90,6 +107,10 @@ function removeSentence(sentence: SentenceData, game: AGameElement): number {
   return i;
 }
 
+function defaultCallback(sentence: SentenceData, game: AGameElement) {
+  removeSentence(sentence, game);
+}
+
 // TODO - really not great to do this here, i have no control over timing in the game
 
 export function completeSentence(sentence: SentenceData, game: AGameElement) {
@@ -108,76 +129,54 @@ export function completeSentence(sentence: SentenceData, game: AGameElement) {
 
 /* ------ */
 
-definePuzzleSentences('did i lock the door');
-defineSolutionSentence('i did lock the door', (sentence, game) => {
-  removeSentence(sentence, game);
+definePuzzleSentences([
+  'did i lock the door',
+  'what was that noise',
+  'is some thing wrong',
+  'how will i sleep',
+  'is some one there',
+  'what is wrong with me',
+  'can not get comfort able',
+  'how much to do tomorrow',
+]);
 
-  // TODO replace with something that follows from the locked door thread
-  game.loadSentenceData([
-    'what was that noise',
-    'some thing is wrong',
-    'no no no...',
-  ]);
-});
+defineSolutionSentences([
+  'i did lock the door',
+  'that noise was no thing',
+  'no thing is wrong',
+  'i will sleep',
+  'no one is there',
+  'no thing is there',
+  'no thing is wrong with me',
+  'not much to do tomorrow',
+]);
 
-/* ------ */
+defineLandmineSentences([
+  'that was no thing',
+  'that was no noise',
+  'that noise was some thing',
+  'there is no way i will sleep',
+  'i will not sleep',
+  'some thing is very wrong',
+  'some thing is wrong with me',
+  'so much to do tomorrow',
+]);
 
-definePuzzleSentences('some thing is wrong');
-definePuzzleSentences('no no no...');
+const botherQueue: BotherThought[] = [];
 
-defineSolutionSentence('no thing is wrong', (sentence, game) => {
-  // left over = some no no...
-  removeSentence(sentence, game);
-});
+export function getBother(): SentenceData {
+  if (botherQueue.length === 0) {
+    for (let bother of data.bothers)
+      botherQueue.push(bother);
 
-/* ------ */
+    for (let i = 0; i < botherQueue.length; i++) {
+      const randomIndex = Math.min(botherQueue.length - 1, i + Math.floor(Math.random() * (botherQueue.length - i)));
+      const toMove = botherQueue[randomIndex];
+      botherQueue[randomIndex] = botherQueue[i];
+      botherQueue[i] = toMove;
+    }
+  }
 
-definePuzzleSentences('what was that noise');
-defineSolutionSentence('that noise was no thing', (sentence, game) => {
-  // left over = some what is wrong no no...
-  removeSentence(sentence, game);
-});
-
-//TODO deduplicate
-defineLandmineSentence('that was no noise', (sentence, game) => {
-  // TODO - have this call into the game to mark it as a bad thing?
-  // then way we do game.loadSentenceData?
-  // left over = some thing is wrong what no no...
-  // can still do "no thing is wrong" and have "some what no..."
-  removeSentence(sentence, game);
-  game.loadSentenceData([
-    'is some one there',
-  ]);
-});
-
-// todo - didn't work?
-defineLandmineSentence('that noise was some thing', (sentence, game) => {
-  // TODO - have this call into the game to mark it as a bad thing?
-  // then way we do game.loadSentenceData?
-  removeSentence(sentence, game);
-  game.loadSentenceData([
-    'is some one there',
-  ]);
-});
-
-/* ------ */
-
-definePuzzleSentences('is some one there');
-defineSolutionSentence('no one is there', (sentence, game) => {
-  removeSentence(sentence, game);
-});
-
-defineLandmineSentence('there is some one', (sentence, game) => {
-  removeSentence(sentence, game);
-});
-
-defineLandmineSentence('some one is there', (sentence, game) => {
-  removeSentence(sentence, game);
-});
-
-/* ------ */
-
-defineLandmineSentence('some thing is very wrong', (sentence, game) => {
-  // TODO where does the very come from?
-  removeSentence(sentence, game);
-})
+  const bother = botherQueue.pop()!;
+  return { words: bother.words, id: getUniqueId() }
+}

@@ -28,11 +28,23 @@ definePair('no', 'thing');
 definePair('some', 'thing');
 definePair('some', 'what');
 definePair('some', 'one');
+definePair('comfort', 'able');
+definePair('can', 'not');
 
 defineDraggables([
   'did',
   'was',
+  'were',
   'not',
+  'no',
   'there',
   'very',
+  'so',
+  'will',
+  'who',
+  'what',
+  'when',
+  'where',
+  'why',
+  'how',
 ]);

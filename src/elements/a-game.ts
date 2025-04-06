@@ -2,6 +2,7 @@ import { LitElement, css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { keyed } from 'lit/directives/keyed.js';
 import { repeat } from 'lit/directives/repeat.js';
+import { classMap } from "lit/directives/class-map.js";
 
 import './a-sentence.js';
 import './a-button.js';
@@ -12,7 +13,7 @@ import { AWordElement } from "./a-word.js";
 import { eventListener, getElementFromPath, getElementFromPoint } from "../event-listener.js";
 import { animateOut, animateIn, getIndexInParent, getParentComponent, sleep } from "../utils.js";
 import { ASentenceElement } from "./a-sentence.js";
-import { getThought, checkSentence, completeSentence, ThoughtType } from '../game-data.js';
+import { checkSentence, completeSentence, ThoughtType, getBother } from '../game-data.js';
 
 import type { PropertyValues } from "lit";
 import type { SentenceData } from "../game-data.js";
@@ -84,6 +85,17 @@ export class AGameElement extends LitElement {
       from { opacity: 0; }
       to { opacity: 1; }
     }
+
+    .stats {
+      text-align: center;
+      padding-bottom: 5px;
+      opacity: 1;
+      transition: opacity .5s ease;
+    }
+
+    .hidden {
+      opacity: 0;
+    }
   `;
 
   @state()
@@ -96,10 +108,10 @@ export class AGameElement extends LitElement {
   accessor state: State = State.Start;
 
   @state()
-  accessor energySpent: number = 0;
+  accessor timeToNextThought = 0;
 
-  @state()
-  accessor relaxation: number = 100;
+  timeBetweenThoughts = 15;
+  newThoughtCooldown = 5;
 
   @state()
   accessor animateIn: boolean = false;
@@ -136,16 +148,15 @@ export class AGameElement extends LitElement {
     }
   }
 
-  async loadSentenceData(toLoad: string[]) {
+  async loadBother(count: number = 1) {
     // TODO - update game state to disallow playing during this?
+    if (count < 1) return;
 
-    for (let text of toLoad) {
-      const sentence = getThought(text);
-      if (sentence) {
-        this.sentences.push(sentence);
-        this.requestUpdate();
-        await sleep(1000);
-      }
+    for (let i = 0; i < count; i++) {
+      const sentence = getBother();
+      this.sentences.push(sentence)
+      this.requestUpdate();
+      await sleep(1000);
     }
   }
 
@@ -154,8 +165,10 @@ export class AGameElement extends LitElement {
       this.updateDragAndDropIndices();
 
     if (changedProperties.has('state')) {
-      if (this.state === State.Playing)
-        this.loadSentenceData(['did i lock the door']);
+      if (this.state === State.Playing) {
+        this.resetTimeToNextThought();
+        this.loadBother(2);
+      }
       else if (this.state === State.BeforePlaying) {
         sleep(3500).then(() => {
           this.transitionScene(State.Playing);
@@ -165,11 +178,17 @@ export class AGameElement extends LitElement {
   }
 
   onTimerTick = (_timer: ATimerElement) => {
-    this.addRelaxation(-this.sentences.length);
+    if (this.timeToNextThought)
+      this.timeToNextThought -= 1;
+
+    if (this.timeToNextThought <= 0) {
+      this.loadBother(1);
+      this.resetTimeToNextThought();
+    }
   }
 
-  addRelaxation(value: number) {
-    this.relaxation = Math.max(0, Math.min(200, this.relaxation + value));
+  resetTimeToNextThought() {
+    this.timeToNextThought = this.timeBetweenThoughts + this.newThoughtCooldown;
   }
 
   get timerTickRate() {
@@ -186,10 +205,8 @@ export class AGameElement extends LitElement {
           ${this.renderGameState()}
         </div>
       </div>
-      <div class="stats">
-        Actions: ${this.energySpent}
-        <br>
-        Relaxation <a-bar .fill=${this.relaxation} .max=${200}></a-bar> ${this.relaxation}
+      <div class=${classMap({ stats: true, hidden: this.timeToNextThought > this.timeBetweenThoughts || this.state !== State.Playing })}>
+        <a-bar .fill=${this.timeToNextThought} .max=${this.timeBetweenThoughts}></a-bar>
       </div>
     `;
   }
@@ -425,6 +442,8 @@ export class AGameElement extends LitElement {
     else
       to.words.splice(dropChunkIndex, 0, ...moved);
 
+    let anyCompleted = false;
+
     for (let i = 0; i < this.sentences.length; i++) {
       const sentence = this.sentences[i];
 
@@ -432,8 +451,7 @@ export class AGameElement extends LitElement {
       if (thoughtType === ThoughtType.Jumble || thoughtType === ThoughtType.Bother)
         continue;
 
-      if (thoughtType === ThoughtType.Calming)
-        this.addRelaxation(sentence.words.length * 10);
+      anyCompleted = true;
       
       const el = this.shadowRoot?.querySelector<ASentenceElement>(`a-sentence[index="${i}"]`);
       // TODO lock game during this?
@@ -450,7 +468,8 @@ export class AGameElement extends LitElement {
         });
     }
 
-    this.energySpent += 1;
+    if (anyCompleted)
+      this.resetTimeToNextThought();
 
     this.requestUpdate();
   }
