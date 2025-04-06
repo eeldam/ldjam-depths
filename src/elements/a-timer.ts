@@ -10,6 +10,15 @@ export class ATimerElement extends LitElement {
       text-align: center;
       padding: 45px 0;
     }
+
+    .ampm {
+      font-size: 30px;
+    }
+
+    .divider {
+      transform: translateY(-5px);
+      display: inline-block;
+    }
   `;
 
   @state()
@@ -57,8 +66,12 @@ export class ATimerElement extends LitElement {
     let minutes = (this.elapsed % 60).toString();
     if (minutes.length === 1) minutes = '0' + minutes;
     
-    let hours = (this.startingHour + Math.floor(this.elapsed / 60)).toString()
+    const hourCount = this.startingHour + Math.floor(this.elapsed / 60);
+    let hours = (hourCount % 12 ).toString()
+    if (hours === '0') hours = '12';
     if (hours.length === 1) hours = '0' + hours;
+
+    const isPm = hourCount % 24 >= 12;
 
     return html`
       <span class="digit">${hours[0]}</span>
@@ -66,7 +79,7 @@ export class ATimerElement extends LitElement {
       <span class="divider">:</span>
       <span class="digit">${minutes[0]}</span>
       <span class="digit">${minutes[1]}</span>
-      <span class="am">AM</span>
+      <span class="ampm">${isPm ? 'PM' : 'AM'}</span>
     `;
   }
 }
