@@ -160,8 +160,11 @@ export class AGameElement extends LitElement {
     // TODO - update game state to disallow playing during this?
     if (count < 1) return;
 
+
+
     for (let i = 0; i < count; i++) {
       if (this.sentences.length >= this.maxThoughts) {
+        completeSentence(this.sentences[0], this);
         this.sleepLevel = Math.max(0, this.sleepLevel - 1);
       } else {
         const sentence = getBother();
