@@ -19,6 +19,11 @@ export class ATimerElement extends LitElement {
       transform: translateY(-5px);
       display: inline-block;
     }
+
+    .digit {
+      display: inline-block;
+      width: .5em;
+    }
   `;
 
   @state()
