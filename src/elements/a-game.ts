@@ -287,7 +287,7 @@ export class AGameElement extends LitElement {
       const deltaX = this.lastX - x;
       const deltaY = this.lastY - y;
 
-      const distance = Math.sqrt((deltaX**2) + (deltaY**2));
+      const distance = Math.min(15, Math.max(-15, Math.sqrt((deltaX**2) + (deltaY**2))));
       this.lastX = x;
       this.lastY = y;
 
