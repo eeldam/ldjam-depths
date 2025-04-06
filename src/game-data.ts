@@ -148,14 +148,18 @@ definePuzzleSentences([
   'can not get comfort able',
   'how much to do tomorrow',
   'no no no',
+  'can i get any sleep',
 ]);
 
 defineSolutionSentences([
   'i did lock the door',
   'that noise was no thing',
+  'that noise was not any thing',
   'no thing is wrong',
   'i will sleep',
+  'i will get some sleep',
   'no one is there',
+  'some one is not there',
   'no thing is there',
   'no thing is wrong with me',
   'not much to do tomorrow',
@@ -167,7 +171,8 @@ defineLandmineSentences([
   'that noise was some thing',
   'there is no way i will sleep',
   'i will not sleep',
-  'some thing is very wrong',
+  'i can not get any sleep',
+  'some thing is wrong',
   'some thing is wrong with me',
   'so much to do tomorrow',
 ]);

@@ -25,6 +25,7 @@ export function isDraggable(word: string) {
 }
 
 definePair('no', 'thing');
+definePair('no', 'one');
 definePair('some', 'thing');
 definePair('some', 'what');
 definePair('some', 'one');
