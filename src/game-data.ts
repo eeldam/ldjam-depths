@@ -156,6 +156,7 @@ defineSolutionSentences([
   'that noise was no thing',
   'that noise was not any thing',
   'no thing is wrong',
+  'i can get sleep',
   'i will sleep',
   'i will get some sleep',
   'no one is there',

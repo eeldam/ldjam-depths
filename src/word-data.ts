@@ -31,6 +31,7 @@ definePair('some', 'what');
 definePair('some', 'one');
 definePair('comfort', 'able');
 definePair('can', 'not');
+definePair('any', 'thing');
 
 defineDraggables([
   'did',
