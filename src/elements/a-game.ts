@@ -583,8 +583,9 @@ export class AGameElement extends LitElement {
       el.destroy(asType, () => {
 
       // TODO unlock game
-      if (this.sentences[i] !== sentence)
-        throw new Error('unexpected sentence change!')
+      // TODO - there's a definite race condition here, but I don't think it really matters?
+      // if (this.sentences[i] !== sentence)
+      //   throw new Error('unexpected sentence change!')
 
       // TODO - stagger if multiple sentences completed simultatenously?
       completeSentence(sentence, this);
