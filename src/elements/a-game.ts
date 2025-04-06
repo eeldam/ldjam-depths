@@ -56,6 +56,7 @@ export class AGameElement extends LitElement {
       justify-content: center;
       align-items: center;
       padding: 15px;
+      text-align: center;
     }
 
     .spacer {
@@ -187,6 +188,13 @@ export class AGameElement extends LitElement {
         this.loadBother(2);
       }
       else if (this.state === State.BeforePlaying) {
+        // gross!
+        const timer = this.shadowRoot?.querySelector<ATimerElement>('a-timer');
+        if (timer)
+          timer.elapsed = 0;
+        this.rest = 0;
+        this.sleepLevel = 1;
+
         sleep(3500).then(() => {
           this.transitionScene(State.Playing);
         })
@@ -194,13 +202,17 @@ export class AGameElement extends LitElement {
     }
   }
 
+  maxTicks = 60 * 8;
+
   onTimerTick = (_timer: ATimerElement) => {
+    if (_timer.elapsed >= this.maxTicks)
+      return this.transitionScene(State.GameOver);
     // either 2 ** sleep
     // = 1, 2, 4, 8, 16 [32]
     // or 2**sleep - 1
     // = 0, 1, 3, 7, 15
     // or sleep ** 2
-    // = 0, 1, 4, 9, 16 [25]    
+    // = 0, 1, 4, 9, 16 [25]
     this.rest += (2 ** this.sleepLevel) - 1;
 
     if (this.timeToNextThought)
@@ -223,7 +235,8 @@ export class AGameElement extends LitElement {
   get timerTickRate() {
     if (this.state !== State.Playing)
       return 0;
-    return 1000;
+    // TODO make dynamic? this scale brings it from 8 minutes down to 4 for a full game
+    return 500;
   }
 
   render() {
@@ -312,8 +325,50 @@ export class AGameElement extends LitElement {
 
   renderGameOver() {
     return html`
-      Game Over
+      ...time to get up.
+      <div class="spacer"></div>
+      I feel...
+      <div class="spacer"></div>
+      <strong>${this.getRestLevel()}</strong><br>
+      <em>Score: ${this.rest}</em>
+      <div class="spacer">...</div>
+      <a-button @click=${this.handleStartButton}>Try again...</a-button>
     `;
+  }
+
+  getRestLevel() {
+    /*
+    baseline = 480
+    theoretical best = 15 * 480 = 7200
+
+    Based on an actual good nights sleep:
+    l1 = 5% = 24 * 1 = 24
+    l2 = 45% = 216 * 3 = 648
+    l3 = 25% = 120 * 7 = 840
+    l4 = 25% = 120 * 15 = 1800
+    total = 3312
+
+    */
+
+    const { rest } = this;
+
+    if (rest < 480)
+      return 'miserable';
+    if (rest < 960)
+      return 'terrible';
+    if (rest < (3312 * .5))
+      return 'bad';
+    if (rest < 3312)
+      return 'ok';
+    if (rest < (3312 * 1.25))
+      return 'good';
+    if (rest < (3312 * 1.5))
+      return 'great';
+    if (rest < (3312 * 1.75))
+      return 'amazing';
+    if (rest < 7200)
+      return 'incredible';
+    return 'impossibly good';
   }
 
   // ugly but i don't have time for it
