@@ -156,6 +156,7 @@ definePuzzleSentences([
 defineSolutionSentences([
   'i did lock the door',
   'that noise was no thing',
+  'that noise was no one',
   'that noise was not any thing',
   'no thing is wrong',
   'i can get sleep',
