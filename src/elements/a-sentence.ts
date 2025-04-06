@@ -105,7 +105,7 @@ export class ASentenceElement extends LitElement {
   accessor words: WordData[] = [];
 
   @state()
-  accessor locked = false;
+  accessor locked = true;
 
   render() {
     return html`
@@ -142,7 +142,9 @@ export class ASentenceElement extends LitElement {
       this.classList.remove('hide');
 
       this.setAnimationHeight();
-      animateIn(this);
+      animateIn(this, () => {
+        this.locked = false;
+      });
   
       for (let child of Array.from(this.shadowRoot!.querySelectorAll('a-word'))) {
         if (!(child instanceof LitElement))
