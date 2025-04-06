@@ -90,7 +90,7 @@ export function getThought(text: string): SentenceData | null {
     return null;
 
   // TODO wire up type so we can have different input types? maybe not needed
-  return { words: thought.words, id: getUniqueId() }
+  return { words: thought.words.slice(), id: getUniqueId() }
 }
 
 export function checkSentence(sentence: SentenceData): ThoughtType {
