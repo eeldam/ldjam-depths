@@ -6,6 +6,7 @@ import { repeat } from 'lit/directives/repeat.js';
 import './a-sentence.js';
 import './a-button.js';
 import './a-timer.js';
+import './a-bar.js';
 import { AWordElement } from "./a-word.js";
 
 import { eventListener, getElementFromPath, getElementFromPoint } from "../event-listener.js";
@@ -96,7 +97,10 @@ export class AGameElement extends LitElement {
   accessor state: State = State.Start;
 
   @state()
-  accessor peace: number = 50;
+  accessor energySpent: number = 0;
+
+  @state()
+  accessor relaxation: number = 100;
 
   @state()
   accessor animateIn: boolean = false;
@@ -161,10 +165,12 @@ export class AGameElement extends LitElement {
     }
   }
 
-  onTimerTick = (timer: ATimerElement) => {
-    if (timer.isHour) {
-      this.peace = Math.max(0, this.peace - (timer.hoursPassed * 10));
-    }
+  onTimerTick = (_timer: ATimerElement) => {
+    this.addRelaxation(-this.sentences.length);
+  }
+
+  addRelaxation(value: number) {
+    this.relaxation = Math.max(0, Math.min(200, this.relaxation + value));
   }
 
   get timerTickRate() {
@@ -181,7 +187,11 @@ export class AGameElement extends LitElement {
           ${this.renderGameState()}
         </div>
       </div>
-      <div class="peace-index">${this.peace}</div>
+      <div class="stats">
+        Actions: ${this.energySpent}
+        <br>
+        Relaxation <a-bar .fill=${this.relaxation} .max=${200}></a-bar> ${this.relaxation}
+      </div>
     `;
   }
 
@@ -426,6 +436,9 @@ export class AGameElement extends LitElement {
         continue;
 
       anySentencesComplete = true;
+
+      if (thoughtType === ThoughtType.Calming)
+        this.addRelaxation(sentence.words.length * 10);
       
       const el = this.shadowRoot?.querySelector<ASentenceElement>(`a-sentence[index="${i}"]`);
       // TODO lock game during this?
@@ -442,8 +455,7 @@ export class AGameElement extends LitElement {
         });
     }
 
-    if (!anySentencesComplete)
-      this.peace = Math.max(0, this.peace - 5);
+    this.energySpent += 1;
 
     this.requestUpdate();
   }
