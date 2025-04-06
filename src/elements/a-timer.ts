@@ -40,6 +40,12 @@ export class ATimerElement extends LitElement {
 
   startingHour = -2;
 
+  get isHour() { return (this.elapsed % 60) === 0; }
+
+  get hoursPassed() {
+    return Math.floor(this.elapsed / 60)
+  }
+
   connectedCallback(): void {
     super.connectedCallback();
     this.updateTimer();
@@ -79,7 +85,7 @@ export class ATimerElement extends LitElement {
     let minutes = (this.elapsed % 60).toString();
     if (minutes.length === 1) minutes = '0' + minutes;
     
-    const hourCount = this.startingHour + Math.floor(this.elapsed / 60);
+    const hourCount = this.startingHour + this.hoursPassed;
     let hours = ((hourCount + 12) % 12 ).toString()
     if (hours === '0') hours = '12';
     if (hours.length === 1) hours = '0' + hours;

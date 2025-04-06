@@ -1,5 +1,12 @@
 import type { AGameElement } from "./elements/a-game.js";
 
+export enum ThoughtType {
+  Jumble, // unregocnized
+  Bother, // puzzle sentences,
+  Calming, // good solution
+  Worrying, // bad solution
+}
+
 export interface WordData {
   text: string,
   draggable: boolean,
@@ -14,6 +21,27 @@ export type Callback = {
   (sentence: SentenceData, game: AGameElement): Promise<void> | void;
 }
 
+interface BotherThought {
+  type: ThoughtType.Bother;
+  words: WordData[];
+  text: string;
+}
+
+interface CalmingThought {
+  type: ThoughtType.Calming;
+  text: string;
+  callback: Callback;
+}
+
+interface WorryingThought {
+  type: ThoughtType.Worrying;
+  text: string;
+  callback: Callback;
+}
+
+type Thought = BotherThought | CalmingThought | WorryingThought;
+
+
 // TODO this might be a bad idea
 let uniqueIndex = 0;
 function getUniqueId() {
@@ -21,31 +49,40 @@ function getUniqueId() {
 }
 
 const data = {
-  scaries: {} as Record<string, WordData[]>,
-  calmies: {} as Record<string, Callback>,
+  thoughts: {} as Record<string, Thought>,
 }
 
-function defineScarySentence(text: string, draggableWords: string[]) {
+function definePuzzleSentences(text: string, draggableWords: string[]) {
   const draggables = new Set(draggableWords);
   const wordData = text.split(' ').map(text => ({ text, draggable: draggables.has(text) }));
 
-  data.scaries[text] = wordData;
+  data.thoughts[text] = { type: ThoughtType.Bother, words: wordData, text };
 }
 
-function defineCalmySentence(text: string, mutator: Callback) {
-  data.calmies[text] = mutator;
+function defineSolutionSentence(text: string, callback: Callback) {
+  data.thoughts[text] = { type: ThoughtType.Calming, text, callback };
 }
 
-export function getScary(text: string): SentenceData {
-  return { words: data.scaries[text], id: getUniqueId() }
+function defineLandmineSentence(text: string, callback: Callback) {
+  data.thoughts[text] = { type: ThoughtType.Worrying, text, callback }
 }
 
-export function checkSentence(sentence: SentenceData) {
+export function getThought(text: string): SentenceData | null {
+  const thought = data.thoughts[text];
+
+  if (thought?.type !== ThoughtType.Bother)
+    return null;
+
+  // TODO wire up type so we can have different input types? maybe not needed
+  return { words: thought.words, id: getUniqueId() }
+}
+
+export function checkSentence(sentence: SentenceData): ThoughtType {
   const text = sentence.words.map(word => word.text).join(' ');
-  if (text in data.calmies) {
-    return true;
+  if (text in data.thoughts) {
+    return data.thoughts[text].type;
   }
-  return false;
+  return ThoughtType.Jumble;
 }
 
 function removeSentence(sentence: SentenceData, game: AGameElement): number {
@@ -60,13 +97,19 @@ function removeSentence(sentence: SentenceData, game: AGameElement): number {
 export function completeSentence(sentence: SentenceData, game: AGameElement) {
   const text = sentence.words.map(word => word.text).join(' ');
 
-  const mutator = data.calmies[text];
-  if (mutator)
-    mutator(sentence, game);
+  const thought = data.thoughts[text];
+
+  if (!thought)
+    return;
+
+  if (thought.type === ThoughtType.Calming)
+    thought.callback(sentence, game);
+  else if (thought.type === ThoughtType.Worrying)
+    thought.callback(sentence, game);
 }
 
-defineScarySentence('did i lock the door', ['did']);
-defineCalmySentence('i did lock the door', (sentence, game) => {
+definePuzzleSentences('did i lock the door', ['did']);
+defineSolutionSentence('i did lock the door', (sentence, game) => {
   removeSentence(sentence, game);
   game.loadSentenceData([
     'what was that noise',
@@ -75,14 +118,33 @@ defineCalmySentence('i did lock the door', (sentence, game) => {
   ]);
 });
 
-defineScarySentence('what was that noise', ['what', 'was']);
-defineScarySentence('some thing is wrong', ['some', 'thing', 'was']);
-defineScarySentence('no no no...', ['no']);
+definePuzzleSentences('what was that noise', ['what', 'was']);
+definePuzzleSentences('some thing is wrong', ['some', 'thing', 'was']);
+definePuzzleSentences('no no no...', ['no']);
 
-defineCalmySentence('that noise was no thing', (sentence, game) => {
+defineSolutionSentence('that noise was no thing', (sentence, game) => {
   removeSentence(sentence, game);
 });
 
-defineCalmySentence('no thing is wrong', (sentence, game) => {
+defineSolutionSentence('no thing is wrong', (sentence, game) => {
   removeSentence(sentence, game);
 });
+
+defineLandmineSentence('that was no noise', (sentence, game) => {
+  // TODO - have this call into the game to mark it as a bad thing?
+  // then way we do game.loadSentenceData?
+  removeSentence(sentence, game);
+});
+
+// todo - didn't work?
+defineLandmineSentence('that noise was some thing', (sentence, game) => {
+  // TODO - have this call into the game to mark it as a bad thing?
+  // then way we do game.loadSentenceData?
+  removeSentence(sentence, game);
+});
+
+
+defineLandmineSentence('some thing is very wrong', (sentence, game) => {
+  // TODO where does the very come from?
+  removeSentence(sentence, game);
+})

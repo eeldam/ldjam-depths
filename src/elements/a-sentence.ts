@@ -6,6 +6,8 @@ import './a-word.js';
 
 import { animateIn, animateOut, sleep } from "../utils.js";
 import { isPair } from "../word-data.js";
+import { ThoughtType } from "../game-data.js";
+
 
 interface WordData {
   text: string;
@@ -103,9 +105,16 @@ export class ASentenceElement extends LitElement {
       visibility: hidden;
     }
 
+    :host(.calming) {
+      --type-color: rgb(47 143 255);
+    }
+
+    :host(.worrying) {
+      --type-color: rgb(255 131 131);
+    }
+
     :host(.complete) .container {
-      background: rgb(47 143 255);
-      /* background: rgb(39 131 239); */
+      background: var(--type-color);
     }
 
     :host(.complete) a-word {
@@ -175,8 +184,18 @@ export class ASentenceElement extends LitElement {
     this.style.setProperty('--animate-height', `${height}px`);
   }
 
-  async destroy(callback?: () => void) {
+  static typeToClass: Record<ThoughtType, string> = {
+    [ThoughtType.Bother]: 'bother',
+    [ThoughtType.Jumble]: 'jumble',
+    [ThoughtType.Worrying]: 'worrying',
+    [ThoughtType.Calming]: 'calming',
+
+  }
+
+  async destroy(type: ThoughtType, callback?: () => void) {
     this.classList.add('complete');
+    this.classList.add(ASentenceElement.typeToClass[type]);
+
     this.locked = true;
 
     await sleep(1500);

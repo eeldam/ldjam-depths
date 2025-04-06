@@ -12,10 +12,11 @@ import { eventListener, getElementFromPath, getElementFromPoint } from "../event
 import { animateOut, animateIn, getIndexInParent, getParentComponent, sleep } from "../utils.js";
 import { ASentenceElement } from "./a-sentence.js";
 
-import { getScary, checkSentence, completeSentence } from '../game-data.js';
+import { getThought, checkSentence, completeSentence, ThoughtType } from '../game-data.js';
 
 import type { PropertyValues } from "lit";
 import type { SentenceData } from "../game-data.js";
+import { ATimerElement } from "./a-timer.js";
 
 enum State {
   Start,
@@ -95,6 +96,9 @@ export class AGameElement extends LitElement {
   accessor state: State = State.Start;
 
   @state()
+  accessor peace: number = 50;
+
+  @state()
   accessor animateIn: boolean = false;
 
   sentences: SentenceData[] = [];
@@ -132,11 +136,13 @@ export class AGameElement extends LitElement {
   async loadSentenceData(toLoad: string[]) {
     // TODO - update game state to disallow playing during this?
 
-    for (let sentence of toLoad) {
-      console.log('loading', sentence);
-      this.sentences.push(getScary(sentence));
-      this.requestUpdate();
-      await sleep(500);
+    for (let text of toLoad) {
+      const sentence = getThought(text);
+      if (sentence) {
+        this.sentences.push(sentence);
+        this.requestUpdate();
+        await sleep(500);
+      }
     }
   }
 
@@ -155,7 +161,11 @@ export class AGameElement extends LitElement {
     }
   }
 
-  onTimerTick = (_minutesElapsed: number) => {}
+  onTimerTick = (timer: ATimerElement) => {
+    if (timer.isHour) {
+      this.peace = Math.max(0, this.peace - (timer.hoursPassed * 10));
+    }
+  }
 
   get timerTickRate() {
     if (this.state !== State.Playing)
@@ -165,12 +175,13 @@ export class AGameElement extends LitElement {
 
   render() {
     return html`
-      <a-timer .tickRate=${this.timerTickRate}></a-timer>
+      <a-timer .tickRate=${this.timerTickRate} .onTick=${this.onTimerTick}></a-timer>
       <div class="outer">
         <div class="inner">
           ${this.renderGameState()}
         </div>
       </div>
+      <div class="peace-index">${this.peace}</div>
     `;
   }
 
@@ -405,15 +416,21 @@ export class AGameElement extends LitElement {
     else
       to.words.splice(dropChunkIndex, 0, ...moved);
 
+    let anySentencesComplete = false;
+
     for (let i = 0; i < this.sentences.length; i++) {
       const sentence = this.sentences[i];
-      if (!checkSentence(sentence))
+
+      const thoughtType = checkSentence(sentence);
+      if (thoughtType === ThoughtType.Jumble || thoughtType === ThoughtType.Bother)
         continue;
+
+      anySentencesComplete = true;
       
       const el = this.shadowRoot?.querySelector<ASentenceElement>(`a-sentence[index="${i}"]`);
       // TODO lock game during this?
       if (el)
-        el.destroy(() => {
+        el.destroy(thoughtType, () => {
 
         // TODO unlock game
         if (this.sentences[i] !== sentence)
@@ -424,6 +441,9 @@ export class AGameElement extends LitElement {
         this.requestUpdate();
         });
     }
+
+    if (!anySentencesComplete)
+      this.peace = Math.max(0, this.peace - 5);
 
     this.requestUpdate();
   }
