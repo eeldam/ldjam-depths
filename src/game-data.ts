@@ -61,6 +61,7 @@ function definePuzzleSentences(texts: string[]) {
 function definePuzzleSentence(text: string) {
   const wordData = text.split(' ').map(text => ({ text }));
   const bother = { type: ThoughtType.Bother as const, words: wordData, text };
+  Object.freeze(bother.words);
   data.thoughts[text] = bother;
   data.bothers.push(bother);
 }
@@ -195,5 +196,5 @@ export function getBother(): SentenceData {
   }
 
   const bother = botherQueue.pop()!;
-  return { words: bother.words, id: getUniqueId() }
+  return { words: bother.words.slice(), id: getUniqueId() }
 }
