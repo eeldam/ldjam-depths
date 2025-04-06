@@ -165,6 +165,8 @@ export class AGameElement extends LitElement {
       this._dropTargetSentenceIndex = sentence ? getIndexInParent(sentence) : -1;
       this._isValidDropTarget = sentence ? sentence.words.length < this.maxSentenceLength : false;
     }
+
+    this._isValidDropTarget = this._isValidDropTarget || (this._dragSourceSentenceIndex === this._dropTargetSentenceIndex);
   }
 
   async loadBother(count: number = 1) {
