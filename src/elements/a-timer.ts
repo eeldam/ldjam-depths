@@ -9,6 +9,9 @@ export class ATimerElement extends LitElement {
       font-size: 45px;
       text-align: center;
       padding: 20px 0;
+
+      transition: filter 1s linear;
+      filter: var(--blur-level, none);
     }
 
     .ampm {

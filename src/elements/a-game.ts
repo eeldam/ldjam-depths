@@ -40,6 +40,9 @@ export class AGameElement extends LitElement {
       bottom: 0;
       touch-action: manipulation;
       overflow: hidden;
+
+      transition: background-color 1s linear;
+      background-color: var(--bg-color);
     }
 
     .outer {
@@ -202,12 +205,46 @@ export class AGameElement extends LitElement {
           timer.elapsed = 0;
         this.rest = 0;
         this.sleepLevel = 1;
+        this.setSleepLevelStyles(1);
 
         sleep(3500).then(() => {
           this.transitionScene(State.Playing);
         })
+      } else if (this.state === State.GameOver) {
+        this.setSleepLevelStyles(0);
+      } else {
+        this.setSleepLevelStyles(4);
       }
     }
+
+    if (changedProperties.has('sleepLevel')) {
+      this.setSleepLevelStyles(this.sleepLevel);
+    }
+  }
+  
+  _tickRate = 500;
+
+  setSleepLevelStyles(value: number) {
+    this.style.setProperty('--blur-level', `blur(${value}px)`);
+
+    let backgroundColor: string;
+    if (value >= 4) {
+      backgroundColor = 'rgb(0 0 0)';
+      this._tickRate = 1000;
+    } else if (value = 3) {
+      backgroundColor = 'rgb(31 23 31)';
+      this._tickRate = 850;
+    } else if (value = 2) {
+      backgroundColor = 'rgb(47 31 44)';
+      this._tickRate = 700;
+    } else if (value = 1) {
+      backgroundColor = 'rgb(59 35 47)';
+      this._tickRate = 550;
+    } else {
+      backgroundColor = 'rgb(79 44 47)';
+      this._tickRate = 400;
+    }
+    this.style.setProperty('--bg-color', backgroundColor);
   }
 
   maxTicks = 60 * 8;
@@ -244,7 +281,7 @@ export class AGameElement extends LitElement {
     if (this.state !== State.Playing)
       return 0;
     // TODO make dynamic? this scale brings it from 8 minutes down to 4 for a full game
-    return 500;
+    return this._tickRate;
   }
 
   render() {
