@@ -231,13 +231,13 @@ export class AGameElement extends LitElement {
     if (value >= 4) {
       backgroundColor = 'rgb(0 0 0)';
       this._tickRate = 1000;
-    } else if (value = 3) {
+    } else if (value === 3) {
       backgroundColor = 'rgb(31 23 31)';
       this._tickRate = 850;
-    } else if (value = 2) {
+    } else if (value === 2) {
       backgroundColor = 'rgb(47 31 44)';
       this._tickRate = 700;
-    } else if (value = 1) {
+    } else if (value === 1) {
       backgroundColor = 'rgb(59 35 47)';
       this._tickRate = 550;
     } else {
