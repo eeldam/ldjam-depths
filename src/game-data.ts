@@ -176,16 +176,24 @@ defineAll('is some thing wrong',
 
 definePuzzleSentences([
   'can i get any sleep',
+  'when will i fall asleep',
+  'i need to sleep',
+  'i need some rest',
+  'will i sleep too much',
+  'why am i not asleep',
 ])
 defineAll('how will i sleep',
   [
     'i can sleep',
+    'i can fall asleep',
     'i can get sleep',
     'i can get some sleep',
     'i will sleep',
+    'i will fall asleep',
     'i will get sleep',
     'i will get some sleep',
     'just sleep',
+    'just fall asleep',
     'just get sleep',
     'just get some sleep',
   ],
@@ -228,6 +236,7 @@ defineAll('how much to do tomorrow',
   ],
   [
     'so much to do tomorrow',
+    'too much to do tomorrow',
   ]
 );
 
@@ -240,12 +249,17 @@ defineAll('what is wrong with me',
   ]
 );
 
+definePuzzleSentences([
+  'can i just get relaxed',
+])
 defineAll('can i get comfort able',
   [
     'i am comfort able',
+    'i am relaxed',
   ],
   [
     'i can not get comfort able',
+    'i can not get relaxed',
   ]
 );
 
@@ -274,6 +288,9 @@ defineAll('what am i going to do',
   ]
 );
 
+definePuzzleSentences([
+  'why am i worried so much',
+])
 defineAll('what am i worried about',
   [
     'i am not worried',
@@ -300,13 +317,51 @@ defineAll('what time is it',
     'there is not time to rest',
   ]
 )
-// defineAll('', [], [])
+
+defineAll('did i set my alarm',
+  [
+    'i did set my alarm',
+    'i will set my alarm',
+  ],
+  [
+    'i did not set my alarm',
+    'i am worried about my alarm',
+  ]
+)
+
+defineAll('did i take my medicine', [
+  'i did take my medicine',
+], [
+  'i did not take my medicine',
+])
+
+defineAll('did i feed my cat', [
+  'i did feed my cat',
+  'i will feed my cat tomorrow',
+], [
+  'i did not feed my cat',
+])
+
+defineAll('did i pack my lunch', [
+  'i did pack my lunch',
+  'i will pack my lunch tomorrow',
+], [
+  'i did not pack my lunch',
+])
+
+defineAll('do i have clothes for tomorrow', [
+  'i have clothes for tomorrow',
+  'i can get clothes tomorrow',
+  'i can get my clothes tomorrow',
+  'i do not need clothes tomorrow',
+], [
+  'i do not have any clothes',
+  'i will not have clothes tomorrow',
+])
 
 definePuzzleSentences([
   'no no no',
-  'no not again',
 ]);
-
 
 const botherQueue: BotherThought[] = [];
 
@@ -328,3 +383,70 @@ export function getBother(): SentenceData {
 }
 
 console.log(data.bothers.length, 'bothers');
+
+const wordsInSolutions = new Set<string>();
+const wordsInLandmines = new Set<string>();
+const wordsInPuzzles = new Set<string>();
+
+for (let thought of Object.values(data.thoughts)) {
+  if (thought.type === ThoughtType.Bother) {
+    for (const word of thought.words)
+      wordsInPuzzles.add(word.text);
+  }
+
+  else if (thought.type === ThoughtType.Calming) {
+    const words = thought.text.split(' ');
+    for (const word of words)
+      wordsInSolutions.add(word);
+  }
+
+  else if (thought.type === ThoughtType.Worrying) {
+    const words = thought.text.split(' ');
+    for (const word of words)
+      wordsInLandmines.add(word);
+  }
+}
+
+console.log('Report:')
+
+let issues = 0;
+
+for (let word of wordsInPuzzles) {
+  const inSolution = wordsInSolutions.has(word);
+  const inLandmine = wordsInLandmines.has(word);
+
+  if (inSolution || inLandmine)
+    continue;
+
+  if (!inSolution && !inLandmine)
+    console.log(word, 'cannot be cleared');
+  else if (!inSolution)
+    console.log(word, 'can only be cleared in landmine');
+  else
+    continue;
+  issues += 1;
+}
+
+for (let word of wordsInLandmines) {
+  if (wordsInPuzzles.has(word))
+    continue;
+  issues += 1;
+  console.log(word, 'in landmine that cant be hit')
+}
+
+for (let word of wordsInSolutions) {
+  if (wordsInPuzzles.has(word))
+    continue;
+  issues += 1;
+  console.log(word, 'in solution that cant be hit')
+}
+
+
+// TODO - make who / what / when / where just disappear when you touch them?
+console.log('issues found', issues);
+
+// console.log('Solution Words')
+// console.log(wordsInSolutions)
+
+// console.log('Landmine Words')
+// console.log(wordsInSolutions)
