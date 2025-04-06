@@ -140,47 +140,173 @@ export function completeSentence(sentence: SentenceData, game: AGameElement) {
 
 /* ------ */
 
+function defineAll(puzzleSentence: string, solutionSentences: string[], landmineSentences: string[]) {
+  definePuzzleSentence(puzzleSentence);
+  defineSolutionSentences(solutionSentences);
+  defineLandmineSentences(landmineSentences);
+}
+
+defineAll('did i lock the door',
+  ['i did lock the door'],
+  ['i did not lock the door'],
+);
+
+defineAll('what was that noise',
+  [
+    'that noise was no thing',
+    'that noise was no one',
+    'that noise was not any thing',
+    'that was just some noise',
+  ],
+  [
+    'that noise was some thing',
+    'that noise was some one',
+    'that was no noise'
+  ],
+);
+
+defineAll('is some thing wrong', 
+  [
+    'no thing is wrong',
+  ],
+  [
+    'some thing is wrong',
+  ]
+)
+
 definePuzzleSentences([
-  'did i lock the door',
-  'what was that noise',
-  'is some thing wrong',
-  'how will i sleep',
-  'is some one there',
-  'what is wrong with me',
-  'can not get comfort able',
-  'how much to do tomorrow',
-  'no no no',
   'can i get any sleep',
+])
+defineAll('how will i sleep',
+  [
+    'i can sleep',
+    'i can get sleep',
+    'i can get some sleep',
+    'i will sleep',
+    'i will get sleep',
+    'i will get some sleep',
+    'just sleep',
+    'just get sleep',
+    'just get some sleep',
+  ],
+  [
+    'i can not sleep',
+    'i can not get sleep',
+    'i can not get any sleep',
+    'i will not sleep',
+    'i will not get sleep',
+    'i will not get any sleep',
+  ]
+)
+
+defineAll('is some one there',
+  [
+    'no one is there',
+    'there is no one',
+    'some one is not there',
+  ],
+  [
+    'some one is there',
+  ]
+)
+
+defineAll('is some thing there',
+  [
+    'no thing is there',
+    'that was no thing',
+    'there is not any thing',
+  ],
+  [
+    'some thing is there',
+    'there is some thing',
+  ]
+);
+
+defineAll('how much to do tomorrow',
+  [
+    'not much to do tomorrow',
+  ],
+  [
+    'so much to do tomorrow',
+  ]
+);
+
+defineAll('what is wrong with me',
+  [
+    'no thing is wrong with me',
+  ],
+  [
+    'some thing is wrong with me',
+  ]
+);
+
+defineAll('can i get comfort able',
+  [
+    'i am comfort able',
+  ],
+  [
+    'i can not get comfort able',
+  ]
+);
+
+defineAll('will i get that thing finished',
+  [
+    'i will get that thing finished',
+    'that thing will get finished',
+  ],
+  [
+    'that thing will not get finished',
+    'i will not get that finished',
+    'that thing will not get finished',
+    'that will not get finished',
+    'i will not get finished',
+  ]
+)
+
+defineAll('what am i going to do',
+  [
+    'i am going to rest',
+    'i am going to sleep',
+  ],
+  [
+    'i am not going to sleep',
+    'i am not going to rest',
+  ]
+);
+
+defineAll('what am i worried about',
+  [
+    'i am not worried',
+    'i am not worried about that',
+    'i will not get worried',
+  ],
+  [
+    'i am worried about that',
+    'i am worried about some thing',
+    'i am worried about that thing',
+    'i am worried about time',
+  ]
+)
+
+defineAll('what time is it',
+  [
+    'it is time for rest',
+    'it is time to rest',
+    'it is time for sleep',
+    'it is time to sleep',
+  ],
+  [
+    'there is not time to sleep',
+    'there is not time to rest',
+  ]
+)
+// defineAll('', [], [])
+
+definePuzzleSentences([
+  'no no no',
+  'no not again',
 ]);
 
-defineSolutionSentences([
-  'i did lock the door',
-  'that noise was no thing',
-  'that noise was no one',
-  'that noise was not any thing',
-  'no thing is wrong',
-  'i can get sleep',
-  'i will sleep',
-  'i will get some sleep',
-  'no one is there',
-  'some one is not there',
-  'no thing is there',
-  'no thing is wrong with me',
-  'not much to do tomorrow',
-]);
-
-defineLandmineSentences([
-  'i did not lock the door',
-  'that was no thing',
-  'that was no noise',
-  'that noise was some thing',
-  'there is no way i will sleep',
-  'i will not sleep',
-  'i can not get any sleep',
-  'some thing is wrong',
-  'some thing is wrong with me',
-  'so much to do tomorrow',
-]);
 
 const botherQueue: BotherThought[] = [];
 
@@ -200,3 +326,5 @@ export function getBother(): SentenceData {
   const bother = botherQueue.pop()!;
   return { words: bother.words.slice(), id: getUniqueId() }
 }
+
+console.log(data.bothers.length, 'bothers');

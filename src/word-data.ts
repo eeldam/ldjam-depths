@@ -49,4 +49,8 @@ defineDraggables([
   'where',
   'why',
   'how',
+  'rest',
+  'sleep',
+  'that',
+  'am',
 ]);
