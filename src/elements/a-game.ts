@@ -1,6 +1,7 @@
 import { LitElement, css, html } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { keyed } from 'lit/directives/keyed.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 import './a-sentence.js';
 import './a-button.js';
@@ -211,7 +212,7 @@ export class AGameElement extends LitElement {
   }
 
   renderSentences() {
-    return this.sentences.map((data, i) => {
+    return repeat(this.sentences, data => data.id, (data, i) => {
       const isSentenceDropTarget = this._dropTargetSentenceIndex === i;
       const isSentenceDragSource = this._dragSourceSentenceIndex === i;
 
