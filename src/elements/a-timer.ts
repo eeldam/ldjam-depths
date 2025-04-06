@@ -8,7 +8,7 @@ export class ATimerElement extends LitElement {
       display: block;
       font-size: 45px;
       text-align: center;
-      padding: 45px 0;
+      padding: 20px 0;
     }
 
     .ampm {
