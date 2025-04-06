@@ -20,8 +20,9 @@ export function isPair(pre: string, post: string) {
   return pairs.get(pre)?.has(post) ?? false;
 }
 
-export function isDraggable(word: string) {
-  return draggables.has(word);
+export function isDraggable(_word: string) {
+  return true;
+  // return draggables.has(word);
 }
 
 definePair('no', 'thing');
