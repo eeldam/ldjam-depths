@@ -598,8 +598,9 @@ export class AGameElement extends LitElement {
 
     }
 
-    this.draggedElement.style.transform = this._dragData.baseTransform;
-    this.draggedElement.style.pointerEvents = 'initial';
+    this.draggedElement.style.transform = '';
+    this.draggedElement.style.pointerEvents = '';
+    this.draggedElement.style.zIndex = '';
     this.draggedElement = null;
     this.dropTarget = null;
   }
