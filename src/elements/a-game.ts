@@ -519,7 +519,7 @@ export class AGameElement extends LitElement {
       return;
 
     const dropTarget = getElementFromPoint(this, e);
-    
+
     // TODO - do in a more generic way
     // prevent dropping into a sentence that is e.g. animating out
     if (dropTarget) {

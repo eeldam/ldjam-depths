@@ -34,7 +34,7 @@ export function getElementFromPoint(from: HTMLElement, evt: PointerEvent): HTMLE
   while (target && target.shadowRoot) {
     root = target.shadowRoot;
     const nextTarget = root.elementFromPoint(evt.clientX, evt.clientY);
-    if (nextTarget === target)
+    if (nextTarget == null || nextTarget === target)
       break;
     target = nextTarget;
   }
