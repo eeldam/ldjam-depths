@@ -606,8 +606,16 @@ export class AGameElement extends LitElement {
   }
 
   resolveDrop() {
-    if (!this.draggedElement || !this._isValidDropTarget)
+    if (!this.draggedElement)
       return;
+
+    if (!this._isValidDropTarget) {
+      this.destroySentence(this._dropTargetSentenceIndex, ThoughtType.Worrying);
+      this.sentences[this._dragSourceSentenceIndex].words.splice(this._dragSourceWordIndex, 1);
+      this.sleepLevel = Math.max(0, this.sleepLevel - 1);
+      this.requestUpdate();
+      return;
+    }
 
     const dragContainerIndex = this._dragSourceSentenceIndex;
     const dragChunkIndex = this._dragSourceWordIndex;
