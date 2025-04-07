@@ -104,6 +104,12 @@ export class AGameElement extends LitElement {
     .stats .hidden {
       opacity: .2;
     }
+
+    .pause {
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
   `;
 
   @state()
@@ -129,6 +135,9 @@ export class AGameElement extends LitElement {
 
   @state()
   accessor animateIn: boolean = false;
+
+  @state()
+  accessor paused = true;
 
   sentences: SentenceData[] = [];
 
@@ -278,15 +287,20 @@ export class AGameElement extends LitElement {
   }
 
   get timerTickRate() {
-    if (this.state !== State.Playing)
+    if (this.state !== State.Playing || this.paused)
       return 0;
     // TODO make dynamic? this scale brings it from 8 minutes down to 4 for a full game
     return this._tickRate;
   }
 
+  handlePause(_e: PointerEvent) {
+    this.paused = !this.paused;
+  }
+
   render() {
     return html`
       <a-timer .tickRate=${this.timerTickRate} .onTick=${this.onTimerTick}></a-timer>
+      <button class="pause" @click=${this.handlePause}>${this.paused ? '▸' : '⏸'}</button>
       <div class="outer">
         <div class="inner">
           ${this.renderGameState()}
