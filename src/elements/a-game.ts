@@ -538,7 +538,10 @@ export class AGameElement extends LitElement {
     // prevent dropping into a sentence that is e.g. animating out
     if (dropTarget) {
       const dropContainer = dropTarget instanceof ASentenceElement ? dropTarget : getParentComponent(dropTarget);
-      if (!(dropContainer instanceof ASentenceElement))
+      
+      if (dropTarget instanceof AWordElement)
+        this.dropTarget = dropTarget;
+      else if (!(dropContainer instanceof ASentenceElement))
         this.dropTarget = null;
       else if (!dropContainer?.locked)
         this.dropTarget = dropContainer;
