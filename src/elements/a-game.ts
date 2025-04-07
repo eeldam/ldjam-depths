@@ -665,6 +665,37 @@ export class AGameElement extends LitElement {
     this.requestUpdate();
   }
 
+  scrubWord(text: string) {
+    for (let i = 0; i < this.sentences.length; i++) {
+      const sentence = this.sentences[i];
+      if (sentence.resolved)
+        continue;
+      for (let j = 0; j < sentence.words.length; j++) {
+        const word = sentence.words[j];
+        if (word.resolved)
+          continue;
+
+        if (word.text !== text) 
+          continue;
+
+        word.resolved = true;
+
+        try {
+          const sentenceEl = this.shadowRoot?.querySelector<ASentenceElement>(`a-sentence[index="${i}"]`)!;  
+          const wordEl = sentenceEl.shadowRoot?.querySelector<AWordElement>(`a-word[key="${j}"]`)!;
+          
+          animateOut(wordEl, () => {
+            sentence.words.splice(j, 1);
+            this.requestUpdate();
+          })
+        } catch (err) {
+          sentence.words.splice(j, 1);
+          this.requestUpdate();
+        }
+      }
+    }
+  }
+
   destroySentence(i: number, asType: ThoughtType) {
     const sentence = this.sentences[i];
     if (sentence.resolved)

@@ -10,6 +10,7 @@ export enum ThoughtType {
 
 export interface WordData {
   text: string,
+  resolved?: boolean;
 }
 
 export type SentenceData = {
@@ -60,6 +61,8 @@ function definePuzzleSentences(texts: string[]) {
 }
 
 function definePuzzleSentence(text: string) {
+  if (!text)
+    return;
   const wordData = text.split(' ').map(text => ({ text }));
   const bother = { type: ThoughtType.Bother as const, words: wordData, text };
   Object.freeze(bother.words);
@@ -177,26 +180,28 @@ defineAll('is some thing wrong',
 
 definePuzzleSentences([
   'can i get any sleep',
-  'when will i fall asleep',
+  'when will i fall a sleep',
   'i need to sleep',
   'i need some rest',
   'will i sleep too much',
-  'why am i not asleep',
+  'why am i not a sleep',
 ])
 defineAll('how will i sleep',
   [
     'i can sleep',
-    'i can fall asleep',
+    'i can fall a sleep',
     'i can get sleep',
     'i can get some sleep',
     'i will sleep',
-    'i will fall asleep',
+    'i will fall a sleep',
     'i will get sleep',
     'i will get some sleep',
     'just sleep',
-    'just fall asleep',
+    'just fall a sleep',
     'just get sleep',
     'just get some sleep',
+    'i will sleep when ever',
+    'when ever i sleep is ok',
   ],
   [
     'i can not sleep',
@@ -257,6 +262,7 @@ defineAll('can i get comfort able',
   [
     'i am comfort able',
     'i am relaxed',
+    'i can get comfort able',
   ],
   [
     'i can not get comfort able',
@@ -360,8 +366,43 @@ defineAll('do i have clothes for tomorrow', [
   'i will not have clothes tomorrow',
 ])
 
+defineAll('will some thing happen',
+  [
+    'what ever will happen is ok',
+  ],
+  [
+    'some thing will happen',
+  ]
+)
+
+definePuzzleSentence('will i ever fall a sleep')
+
+defineAll('am i ok', ['i am ok'], ['i am not ok'])
+
+defineSolutionSentence('how ever much sleep is ok')
+
+defineLandmineSentence('why why why');
+
+definePuzzleSentence('i can not stop thinking');
+defineSolutionSentences([
+  'stop thinking about why',
+  'stop thinking about how',
+  'stop thinking about what',
+  'stop thinking about when',
+  'stop thinking about sleep',
+  'stop thinking about rest',
+  'stop thinking about tomorrow',
+], (sentence, game) => {
+  removeSentence(sentence, game);
+
+  const scrubWord = sentence.words[sentence.words.length - 1].text;
+  game.scrubWord(scrubWord);
+})
+
 definePuzzleSentences([
   'no no no',
+  'no no',
+  'no no no no',
 ]);
 
 const botherQueue: BotherThought[] = [];
@@ -396,9 +437,12 @@ for (let thought of Object.values(data.thoughts)) {
   }
 
   else if (thought.type === ThoughtType.Calming) {
-    const words = thought.text.split(' ');
-    for (const word of words)
+    const words = thought.text.split(' '); 
+    for (const word of words) {
+      if (word == '' || word == ' ')
+        console.error(thought.text);
       wordsInSolutions.add(word);
+    }
   }
 
   else if (thought.type === ThoughtType.Worrying) {
@@ -447,7 +491,13 @@ for (let word of wordsInSolutions) {
 console.log('issues found', issues);
 
 // console.log('Solution Words')
-// console.log(wordsInSolutions)
+console.log(wordsInSolutions)
 
 // console.log('Landmine Words')
 // console.log(wordsInSolutions)
+
+const exempt = new Set(['no', 'not'])
+
+defineSolutionSentences(
+  Array.from(wordsInSolutions).filter(w => !exempt.has(w)).map(w => `no ${w}`)
+);

@@ -33,6 +33,12 @@ definePair('some', 'one');
 definePair('comfort', 'able');
 definePair('can', 'not');
 definePair('any', 'thing');
+definePair('who', 'ever');
+definePair('how', 'ever');
+definePair('where', 'ever');
+definePair('what', 'ever');
+definePair('when', 'ever');
+definePair('a', 'sleep');
 
 defineDraggables([
   'did',
