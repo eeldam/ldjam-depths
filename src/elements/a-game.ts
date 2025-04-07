@@ -137,7 +137,7 @@ export class AGameElement extends LitElement {
   accessor animateIn: boolean = false;
 
   @state()
-  accessor paused = true;
+  accessor paused = false;
 
   sentences: SentenceData[] = [];
   
@@ -308,7 +308,7 @@ export class AGameElement extends LitElement {
   render() {
     return html`
       <a-timer .tickRate=${this.timerTickRate} .onTick=${this.onTimerTick}></a-timer>
-      <button class="pause" @click=${this.handlePause}>${this.paused ? '▸' : '⏸'}</button>
+      <!-- <button class="pause" @click=${this.handlePause}>${this.paused ? '▸' : '⏸'}</button> -->
       <div class="outer">
         <div class="inner">
           ${this.renderGameState()}
