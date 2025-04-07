@@ -492,19 +492,26 @@ export class AGameElement extends LitElement {
   _dragData = {
     x: 0,
     y: 0,
+    containerY: 0,
+
     lastX: 0,
     lastY: 0,
-    anchor(e: PointerEvent) {
+
+    anchor(e: PointerEvent, el: HTMLElement) {
       this.x = e.clientX;
       this.y = e.clientY;
       this.lastX = 0;
       this.lastY = 0;
+
+      this.containerY = (el.getRootNode() as ShadowRoot).host.getBoundingClientRect().top;
     },
-    getTransform(e: PointerEvent) {
+    getTransform(e: PointerEvent, el: HTMLElement) {
+      const containerY = (el.getRootNode() as ShadowRoot).host.getBoundingClientRect().top - this.containerY;
       const x = e.clientX - this.x;
-      const y = e.clientY - this.y;
+      const y = e.clientY - this.y - containerY;
       const deltaX = this.lastX - x;
       const deltaY = this.lastY - y;
+
 
       const distance =  Math.sqrt((deltaX**2) + (deltaY**2));
       this.lastX = x;
@@ -534,9 +541,9 @@ export class AGameElement extends LitElement {
     if (!target.draggable)
       return;
 
-    this._dragData.anchor(e);
-    
     this.draggedElement = target;
+    this._dragData.anchor(e, this.draggedElement);
+
     this.draggedElement.style.transform = this._dragData.baseTransform;
     this.draggedElement.style.zIndex = '100';
     this.dropTarget = getParentComponent(target);
@@ -575,7 +582,7 @@ export class AGameElement extends LitElement {
       this.dropTarget = null;
     }
 
-    this.draggedElement.style.transform = this._dragData.getTransform(e);
+    this.draggedElement.style.transform = this._dragData.getTransform(e, this.draggedElement);
     this.draggedElement.style.pointerEvents = 'none';
     this.draggedElement.style.zIndex = 'initial';
   }
