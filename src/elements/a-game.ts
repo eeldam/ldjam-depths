@@ -364,13 +364,13 @@ export class AGameElement extends LitElement {
 
   renderHowToPlay() {
     return html`
-      <p>Drag outlined words to reorder them</p>
+      <p>Drag words to reorder them</p>
       
       <p>Create calm thoughts to reach deeper sleep</p>
       
       <p>Avoid creating upsetting thoughts</p>
 
-      <p>Thoughts can't get too complicated</p>
+      <p>Keep thoughts simple</p>
 
       <p>Keep your mind clear</p>
 
