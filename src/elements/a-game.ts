@@ -19,6 +19,11 @@ import type { PropertyValues } from "lit";
 import type { SentenceData } from "../game-data.js";
 import { ATimerElement } from "./a-timer.js";
 
+const ctx = new AudioContext();
+const gain = ctx.createGain();
+gain.gain.value = .20;
+gain.connect(ctx.destination);
+
 enum State {
   Start,
   HowToPlay,
@@ -271,8 +276,10 @@ export class AGameElement extends LitElement {
   maxTicks = 60 * 8;
 
   onTimerTick = (_timer: ATimerElement) => {
-    if (_timer.elapsed >= this.maxTicks)
+    if (_timer.elapsed >= this.maxTicks) {
+      ctx.suspend();
       return this.transitionScene(State.GameOver);
+    }
     // either 2 ** sleep
     // = 1, 2, 4, 8, 16 [32]
     // or 2**sleep - 1
@@ -482,6 +489,12 @@ export class AGameElement extends LitElement {
   handleStartButton(e: Event) {
     e.stopPropagation();
     this.transitionScene(State.BeforePlaying);
+
+    ctx.resume();
+    const osc = ctx.createOscillator();
+    osc.start(ctx.currentTime);
+    osc.frequency.value = 80;
+    osc.connect(gain);
   }
   
   handleHowToPlayButton(e: Event) {
@@ -525,6 +538,15 @@ export class AGameElement extends LitElement {
     baseTransform: `scale(1) translate(0px, 0px) rotate(0deg)`,
   };
 
+  playBlip(frequency: number, type: OscillatorNode['type']) {
+    const osc = ctx.createOscillator();
+    osc.frequency.value = frequency;
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + .1);
+    osc.type = type;
+    osc.connect(gain);
+  }
+
   @eventListener('touchstart', false)
   handleTouchStart(e: PointerEvent) {
     if (e.cancelable)
@@ -540,6 +562,8 @@ export class AGameElement extends LitElement {
 
     if (!target.draggable)
       return;
+
+    this.playBlip(120, 'sine');
 
     this.draggedElement = target;
     this._dragData.anchor(e, this.draggedElement);
@@ -595,7 +619,8 @@ export class AGameElement extends LitElement {
 
     if (this._dropTargetSentenceIndex > -1) {
       this.resolveDrop();
-
+    } else {
+      this.playBlip(100, 'sine');
     }
 
     this.draggedElement.style.transform = '';
@@ -614,6 +639,7 @@ export class AGameElement extends LitElement {
       this.sentences[this._dragSourceSentenceIndex].words.splice(this._dragSourceWordIndex, 1);
       this.sleepLevel = Math.max(0, this.sleepLevel - 1);
       this.requestUpdate();
+      this.playBlip(240, 'sawtooth');
       return;
     }
 
@@ -659,16 +685,22 @@ export class AGameElement extends LitElement {
 
       anyCompleted = true;
 
-      if (thoughtType === ThoughtType.Calming)
+      if (thoughtType === ThoughtType.Calming) {
         this.sleepLevel = Math.min(4, this.sleepLevel + 1);
-      else if (thoughtType === ThoughtType.Worrying)
+        this.playBlip(320, 'sine');
+      }
+      else if (thoughtType === ThoughtType.Worrying) {
         this.sleepLevel = Math.max(0, this.sleepLevel - 1);
+        this.playBlip(120, 'sawtooth');
+      }
       
       this.destroySentence(i, thoughtType);
     }
 
     if (anyCompleted)
       this.resetTimeToNextThought();
+    else
+      this.playBlip(100, 'sine');
 
     this.requestUpdate();
   }
