@@ -229,6 +229,10 @@ export class AGameElement extends LitElement {
         })
       } else if (this.state === State.GameOver) {
         this.setSleepLevelStyles(0);
+        this.sentences = [];
+        this.draggedElement = null;
+        this.dropTarget = null;
+        this.dropIndex = -1;
       } else {
         this.setSleepLevelStyles(4);
       }
