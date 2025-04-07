@@ -213,7 +213,7 @@ export class AGameElement extends LitElement {
     if (changedProperties.has('state')) {
       if (this.state === State.Playing) {
         this.resetTimeToNextThought();
-        this.loadBother(2);
+        this.loadBother(3);
       }
       else if (this.state === State.BeforePlaying) {
         // gross!
