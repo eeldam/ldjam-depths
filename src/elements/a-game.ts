@@ -537,9 +537,11 @@ export class AGameElement extends LitElement {
     // TODO - do in a more generic way
     // prevent dropping into a sentence that is e.g. animating out
     if (dropTarget) {
-      const dropContainer = dropTarget instanceof ASentenceElement ? dropTarget : getParentComponent(dropTarget) as ASentenceElement;
-      if (!dropContainer?.locked)
-        this.dropTarget = dropTarget;
+      const dropContainer = dropTarget instanceof ASentenceElement ? dropTarget : getParentComponent(dropTarget);
+      if (!(dropContainer instanceof ASentenceElement))
+        this.dropTarget = null;
+      else if (!dropContainer?.locked)
+        this.dropTarget = dropContainer;
       else
         this.dropTarget = null;
     } else {
