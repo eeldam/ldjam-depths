@@ -140,11 +140,13 @@ export class AGameElement extends LitElement {
   accessor paused = true;
 
   sentences: SentenceData[] = [];
-
+  
   maxThoughts = 6;
+  
+  @state()
+  accessor dropIndex = -1;
 
   _dropTargetSentenceIndex = -1;
-  _dropTargetWordIndex = -1;
   _dragSourceSentenceIndex = -1;
   _dragSourceWordIndex = -1;
   _isValidDropTarget = false;
@@ -157,7 +159,7 @@ export class AGameElement extends LitElement {
 
     if (!dropTarget || !this.draggedElement || !dragSourceContainer) {
       this._dropTargetSentenceIndex = -1;
-      this._dropTargetWordIndex = -1;
+      // this.dropIndex = -1;
       this._dragSourceSentenceIndex = -1;
       this._dragSourceWordIndex = -1;
       this._isValidDropTarget = false;
@@ -167,12 +169,18 @@ export class AGameElement extends LitElement {
     this._dragSourceSentenceIndex = getIndexInParent(dragSourceContainer);
     this._dragSourceWordIndex = getIndexInParent(this.draggedElement);
 
+    {
+      const rect = this.draggedElement.getBoundingClientRect();
+      const width = rect.width;
+      this.style.setProperty('--dragged-element-width', `${width}px`);
+    }
+
     if (dropTarget instanceof ASentenceElement) {
       this._dropTargetSentenceIndex = getIndexInParent(dropTarget);
-      this._dropTargetWordIndex = -1;
+      // this.dropIndex = -1;
       this._isValidDropTarget = dropTarget.words.length < this.maxSentenceLength;
     } else if (dropTarget instanceof AWordElement) {
-      this._dropTargetWordIndex = getIndexInParent(dropTarget);
+      // this.dropIndex = getIndexInParent(dropTarget);
       const sentence = getParentComponent(dropTarget) as (ASentenceElement | null);
       this._dropTargetSentenceIndex = sentence ? getIndexInParent(sentence) : -1;
       this._isValidDropTarget = sentence ? sentence.words.length < this.maxSentenceLength : false;
@@ -380,9 +388,12 @@ export class AGameElement extends LitElement {
 
       return keyed(data.id, html`<a-sentence
         ?droptarget=${isSentenceDropTarget && this._isValidDropTarget}
+        ?dragsource=${isSentenceDragSource}
         ?invaliddrop=${isSentenceDropTarget && !this._isValidDropTarget}
+        .dropIndex=${isSentenceDropTarget ? this.dropIndex : -1}
+        .dragIndex=${this._dragSourceWordIndex}
         .words=${data.words.map((wordData, j) => {
-          const isDropTarget = isSentenceDropTarget && this._dropTargetWordIndex === j;
+          const isDropTarget = isSentenceDropTarget && this.dropIndex === j;
           const isDragging = isSentenceDragSource && this._dragSourceWordIndex === j;
           const { text } = wordData;
 
@@ -525,6 +536,7 @@ export class AGameElement extends LitElement {
     this.draggedElement.style.transform = this._dragData.baseTransform;
     this.draggedElement.style.zIndex = '100';
     this.dropTarget = getParentComponent(target);
+    this.dropIndex = -1;
   }
 
   @eventListener('pointermove')
@@ -539,6 +551,14 @@ export class AGameElement extends LitElement {
     if (dropTarget) {
       const dropContainer = dropTarget instanceof ASentenceElement ? dropTarget : getParentComponent(dropTarget);
       
+      const sentence = dropContainer instanceof ASentenceElement ? dropContainer : dropTarget instanceof ASentenceElement ? dropTarget : null;
+      if (sentence) {
+        const isSelfDrop = this._dragSourceSentenceIndex === this._dropTargetSentenceIndex;
+        const targetIndex = sentence.getIndexFromPosition(e);
+        const offset = isSelfDrop && targetIndex > (this._dragSourceWordIndex) ? -1 : 0;
+        this.dropIndex = targetIndex + offset;
+      }
+
       if (dropTarget instanceof AWordElement)
         this.dropTarget = dropTarget;
       else if (!(dropContainer instanceof ASentenceElement))
@@ -580,7 +600,7 @@ export class AGameElement extends LitElement {
     const dragContainerIndex = this._dragSourceSentenceIndex;
     const dragChunkIndex = this._dragSourceWordIndex;
     const dropContainerIndex = this._dropTargetSentenceIndex;
-    const dropChunkIndex = this._dropTargetWordIndex;
+    const dropChunkIndex = this.dropIndex;
 
     const isDifferentPosition = dragChunkIndex !== dropChunkIndex;
     const isDifferentContainer = dragContainerIndex !== dropContainerIndex;

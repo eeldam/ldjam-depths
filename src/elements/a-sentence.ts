@@ -148,8 +148,17 @@ export class ASentenceElement extends LitElement {
     }
   `;
 
+  @property({ attribute: false })
+  accessor dropIndex = -1;
+
+  @property({ attribute: false })
+  accessor dragIndex = -1;
+
   @property({ type: Boolean })
   accessor droptarget = false;
+
+  @property({ type: Boolean })
+  accessor dragsource = false;
   
   @property({ type: Boolean })
   accessor invaliddrop = false;
@@ -162,6 +171,7 @@ export class ASentenceElement extends LitElement {
 
   render() {
     let lastData: SentenceWordData | null = null;
+    const isDropping = this.dropIndex >= 0;
 
     return html`
       <div class="container">
@@ -170,10 +180,53 @@ export class ASentenceElement extends LitElement {
           lastData = data;
           const nextWord = i < (this.words.length - 1) ? this.words[i + 1] : null;
 
+          /*
+          Situations
+          1. Dragging in same container, moving left
+             the word at the target index ends of to the right
+          2. Dragging in same container moving right
+             the word at the target index ends up to the left
+          3. Dragging into a different container
+             the word at the target index ends up to the right
+          */
 
+          let isBeforeDrop = false;
+          let isAfterDrop = false;
+          if (isDropping && !data.isDragging) {
+            if (this.dragsource && this.dropIndex > this.dragIndex) {
+              isBeforeDrop = this.dropIndex < i;
+              isAfterDrop = !isBeforeDrop;
+            } else {
+              isBeforeDrop = this.dropIndex <= i;
+              isAfterDrop = !isBeforeDrop;
+            }
+          }
+
+          /*
+            if not dragging into same container, before elements always shift 1/2 left
+            and after always shift 1/2 right
+
+            if dragging into same container, we only want to shift elements that will move
+            relative the the dragged element
+            i.e. if they are before the drop point but after the drag point
+          */
+          let shiftLeft = false;
+          let shiftRight = false;
+          if (isDropping && !data.isDragging) {
+            if (this.dragsource) {
+              shiftLeft = isBeforeDrop && this.dragIndex >= i;
+              shiftRight = isAfterDrop && this.dragIndex < i;
+            } else {
+              shiftLeft = isBeforeDrop;
+              shiftRight = isAfterDrop;
+            }
+          }
 
           return html`<a-word
             class=${classMap({
+              'shift-left': shiftLeft,
+              'shift-right': shiftRight,
+              // 'is-drop-index': i === this.dropIndex,
               'pre-pair': !(data.isDragging || !nextWord || nextWord.isDragging) && isPair(data.text, nextWord.text),
               'post-pair': !(data.isDragging || !beforeWord || beforeWord.isDragging) && isPair(beforeWord.text, data.text),
             })}
@@ -225,6 +278,8 @@ export class ASentenceElement extends LitElement {
         this.locked = false;
       });
   
+      let animating = 0;
+
       for (let child of Array.from(this.shadowRoot!.querySelectorAll('a-word'))) {
         if (!(child instanceof LitElement))
           continue;
@@ -238,8 +293,56 @@ export class ASentenceElement extends LitElement {
         const y = Math.floor((randY / normalDist) * randDist);
   
         child.style.setProperty('--animate-transform', `translate(${x}px, ${y}px)`);
-        animateIn(child);
+        animating++;
+        animateIn(child, () => {
+          animating--;
+          if (!animating)
+            this.recalculateBreakPoints();
+        });
       }
     });
+  }
+
+  _breakPoints: number[] = [];
+  _ownRect: DOMRect | null = null;
+  _recalculateKey: string = '';
+
+  updated(changedProperties: PropertyValues) {
+    if (!changedProperties.has('words'))
+      return;
+    const key = this.words.map(w => w.text).join(' ');
+    if (key === this._recalculateKey)
+      return;
+    this._recalculateKey = key;
+    this.recalculateBreakPoints();
+  }
+
+  recalculateBreakPoints() {
+    const elements = this.shadowRoot!.querySelectorAll('a-word');
+
+    this._breakPoints.length = 0;
+
+    // calculate bounds for each word for collision detection
+    this._ownRect = this.getBoundingClientRect();
+    const containerLeft = this._ownRect.left;
+    
+    for (let i = 0; i < elements.length; i++) {
+      const el = elements[i];
+      const rect = el.getBoundingClientRect();
+      const { width, left } = rect;
+      const leftOffset = left - containerLeft;
+
+      // This should be the center of the element in the container
+      this._breakPoints.push((width / 2) + leftOffset);
+    }
+  }
+
+  getIndexFromPosition(e: PointerEvent) {
+    const x = e.clientX - this._ownRect!.left;
+    for (let i = 0; i < this._breakPoints.length; i++) {
+      if (this._breakPoints[i] > x)
+        return i;
+    }
+    return this._breakPoints.length;
   }
 }
