@@ -78,6 +78,26 @@ export class ASentenceElement extends LitElement {
       margin-left: -.25em;
     }
 
+    :host {
+      --shift: calc(var(--dragged-element-width) / 2);
+    }
+
+    :host([dragsource]) {
+      --shift: var(--dragged-element-width);
+    }
+
+    :host([invaliddrop]) {
+      --shift: 0px;
+    }
+
+    a-word.shift-left {
+      transform: translateX(var(--shift));
+    }
+
+    a-word.shift-right {
+      transform: translateX(calc(-1 * var(--shift)));
+    }
+
     a-word.animate-in {
       animation: 2s ease 1 forwards fadein;
     }
