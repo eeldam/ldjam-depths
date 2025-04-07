@@ -15,6 +15,7 @@ export interface WordData {
 export type SentenceData = {
   words: WordData[];
   id: number;
+  resolved?: boolean,
 }
 
 export type Callback = {

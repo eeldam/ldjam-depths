@@ -641,6 +641,8 @@ export class AGameElement extends LitElement {
 
     for (let i = 0; i < this.sentences.length; i++) {
       const sentence = this.sentences[i];
+      if (sentence.resolved)
+        continue;
 
       const thoughtType = checkSentence(sentence);
       if (thoughtType === ThoughtType.Jumble || thoughtType === ThoughtType.Bother)
@@ -664,6 +666,9 @@ export class AGameElement extends LitElement {
 
   destroySentence(i: number, asType: ThoughtType) {
     const sentence = this.sentences[i];
+    if (sentence.resolved)
+      return;
+    sentence.resolved = true;
     const el = this.shadowRoot?.querySelector<ASentenceElement>(`a-sentence[index="${i}"]`);
     // TODO lock game during this?
     if (el)
