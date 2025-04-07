@@ -496,8 +496,14 @@ console.log(wordsInSolutions)
 // console.log('Landmine Words')
 // console.log(wordsInSolutions)
 
-const exempt = new Set(['no', 'not'])
+const exempt = new Set(['no', 'not', 'sleep', 'rest', 'relaxed'])
 
 defineSolutionSentences(
   Array.from(wordsInSolutions).filter(w => !exempt.has(w)).map(w => `no ${w}`)
 );
+
+defineLandmineSentences([
+  'no sleep',
+  'no rest',
+  'no relaxed',
+])
