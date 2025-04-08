@@ -206,6 +206,9 @@ defineAll('how will i sleep',
     'stop thinking just relax',
     'stop thinking just rest',
     'no thing will happen',
+    'just relax',
+    'just sleep',
+    'just rest',
   ],
   [
     'i can not sleep',
@@ -268,6 +271,7 @@ defineAll('can i get comfort able',
     'i am comfort able',
     'i am relaxed',
     'i can get comfort able',
+    'i can get relaxed',
   ],
   [
     'i can not get comfort able',
@@ -393,22 +397,7 @@ defineSolutionSentence('how ever much sleep is ok')
 defineLandmineSentence('why why why');
 
 definePuzzleSentence('i can not stop thinking');
-defineSolutionSentences([
-  'stop thinking about why',
-  'stop thinking about how',
-  'stop thinking about what',
-  'stop thinking about when',
-  'stop thinking about sleep',
-  'stop thinking about rest',
-  'stop thinking about tomorrow',
-], (sentence, game) => {
-  removeSentence(sentence, game);
-  try {
-    const scrubWord = sentence.words[sentence.words.length - 1].text;
-    game.scrubWord(scrubWord);
-  }
-  catch (err) {}
-})
+defineSolutionSentence('i can stop thinking');
 
 definePuzzleSentences([
   'no no no',
@@ -512,6 +501,18 @@ const exempt = new Set(['no', 'not', 'sleep', 'rest', 'relaxed'])
 defineSolutionSentences(
   Array.from(wordsInSolutions).filter(w => !exempt.has(w)).map(w => `no ${w}`)
 );
+
+defineSolutionSentences(
+  Array.from(wordsInSolutions).filter(w => !exempt.has(w)).map(w => `stop thinking about ${w}`),
+  (sentence, game) => {
+    removeSentence(sentence, game);
+    try {
+      const scrubWord = sentence.words[sentence.words.length - 1].text;
+      game.scrubWord(scrubWord);
+    }
+    catch (err) {}
+  }
+)
 
 defineLandmineSentences([
   'no sleep',
