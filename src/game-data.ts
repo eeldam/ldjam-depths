@@ -205,6 +205,7 @@ defineAll('how will i sleep',
     'stop thinking just sleep',
     'stop thinking just relax',
     'stop thinking just rest',
+    'no thing will happen',
   ],
   [
     'i can not sleep',
@@ -213,6 +214,7 @@ defineAll('how will i sleep',
     'i will not sleep',
     'i will not get sleep',
     'i will not get any sleep',
+    'no thingn will ever happen',
   ]
 )
 
@@ -364,6 +366,10 @@ defineAll('do i have clothes for tomorrow', [
   'i can get clothes tomorrow',
   'i can get my clothes tomorrow',
   'i do not need clothes tomorrow',
+  'i do have clothes for tomorrow',
+  'i do have clothes',
+  'i am a sleep',
+  'i will get a sleep',
 ], [
   'i do not have any clothes',
   'i will not have clothes tomorrow',
