@@ -403,9 +403,11 @@ defineSolutionSentences([
   'stop thinking about tomorrow',
 ], (sentence, game) => {
   removeSentence(sentence, game);
-
-  const scrubWord = sentence.words[sentence.words.length - 1].text;
-  game.scrubWord(scrubWord);
+  try {
+    const scrubWord = sentence.words[sentence.words.length - 1].text;
+    game.scrubWord(scrubWord);
+  }
+  catch (err) {}
 })
 
 definePuzzleSentences([
